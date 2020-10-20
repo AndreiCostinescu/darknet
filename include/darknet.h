@@ -192,6 +192,7 @@ typedef enum {
     L2NORM,
     EMPTY,
     BLANK,
+    PRELU,
     CONTRASTIVE
 } LAYER_TYPE;
 
