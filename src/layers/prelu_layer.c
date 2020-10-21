@@ -1,13 +1,12 @@
 /* Added on 2019.5.7 */
 /* forward only */
 
-#include "prelu_layer.h"
-#include "blas.h"
+#include "layers/prelu_layer.h"
+#include "utils/blas.h"
 #include "assert.h"
 
-layer make_prelu_layer(int batch, int h, int w, int c, int n)
-{
-    layer l = {0};
+layer make_prelu_layer(int batch, int h, int w, int c, int n) {
+    layer l = {(LAYER_TYPE) 0};
     l.type = PRELU;
 
     assert(c % n == 0);
@@ -19,18 +18,18 @@ layer make_prelu_layer(int batch, int h, int w, int c, int n)
     l.h = h;
     l.w = w;
     l.c = c;
-    l.inputs = h*w*c;
+    l.inputs = h * w * c;
 
-    l.out_h = h;    
+    l.out_h = h;
     l.out_w = w;
     l.out_c = c;
-    l.outputs = h*w*c;
+    l.outputs = h * w * c;
 
-    l.output = calloc(batch*l.outputs, sizeof(float));
-    l.delta  = calloc(batch*l.outputs, sizeof(float));
+    l.output = static_cast<float *>(xcalloc(batch * l.outputs, sizeof(float)));
+    l.delta = static_cast<float *>(xcalloc(batch * l.outputs, sizeof(float)));
 
-    l.weights = calloc(n, sizeof(float));
-    l.weight_updates = calloc(n, sizeof(float));
+    l.weights = static_cast<float *>(xcalloc(n, sizeof(float)));
+    l.weight_updates = static_cast<float *>(xcalloc(n, sizeof(float)));
 
     l.nweights = n;
 
@@ -43,66 +42,61 @@ layer make_prelu_layer(int batch, int h, int w, int c, int n)
     l.backward_gpu = backward_prelu_layer_gpu;
     l.update_gpu = update_prelu_layer_gpu;
 
-    if (gpu_index >= 0){
-        l.output_gpu = cuda_make_array(l.output, l.batch*l.outputs);
-        l.delta_gpu  = cuda_make_array(l.delta, l.batch*l.outputs);
+    if (gpu_index >= 0) {
+        l.output_gpu = cuda_make_array(l.output, l.batch * l.outputs);
+        l.delta_gpu = cuda_make_array(l.delta, l.batch * l.outputs);
         l.weights_gpu = cuda_make_array(l.weights, l.nweights);
         l.weight_updates_gpu = cuda_make_array(l.weight_updates, l.nweights);
     }
 #endif
 
-    fprintf(stderr, "prelu   %3d             %4d x%4d x%4d   ->  %4d x%4d x%4d\n", n, l.w, l.h, l.c, l.out_w, l.out_h, l.out_c);
+    fprintf(stderr, "prelu   %3d             %4d x%4d x%4d   ->  %4d x%4d x%4d\n", n, l.w, l.h, l.c, l.out_w, l.out_h,
+            l.out_c);
 
     return l;
 }
 
-void  forward_prelu_layer(const layer l, network net)
-{
-    // >= 0
-    clip_cpu(l.batch*l.outputs, 0, net.input, 1, l.output,  1);
-    axpy_cpu(l.batch*l.outputs, -1, l.output, 1, net.input, 1);
-    
-    // < 0
-    int size = l.w*l.h*l.groups;
-    float alpha = 0;
-    for (int i = 0; i < l.batch; i++ ){
-        for (int j = 0; j < l.n; j++ ){
+void forward_prelu_layer(const layer l, network_state net) {
+    int size = l.w * l.h * l.groups, startIndex, mask;
+    float alpha, inputValue;
+    for (int i = 0; i < l.batch; i++) {
+        for (int j = 0; j < l.n; j++) {
             alpha = l.weights[j];
-            float *a = net.input + i*l.outputs + j*size;
-            float *b = l.output  + i*l.outputs + j*size;
-            axpy_cpu(size, alpha, a, 1, b, 1);
+            startIndex = i * l.outputs + j * size;
+            for (int k = 0; k < size; k++) {
+                inputValue = net.input[startIndex + k];
+                mask = (int) (inputValue > 0);
+                l.output[startIndex + k] = (float) mask * inputValue + (float) (1 - mask) * alpha * inputValue;
+            }
         }
-    } 
+    }
 }
 
-void  backward_prelu_layer(layer l, network net)
-{
+void backward_prelu_layer(layer l, network_state net) {
     // TODO
 }
 
-void  update_prelu_layer(layer l, update_args a)
-{
+void update_prelu_layer(layer l, int batch, float learning_rate, float momentum, float decay) {
     // TODO
 }
 
-void  resize_prelu_layer(layer *l, int w, int h)
-{
+void resize_prelu_layer(layer *l, int w, int h) {
     l->w = w;
     l->h = h;
-    l->inputs = w*h*l->c;
+    l->inputs = w * h * l->c;
 
     l->out_w = w;
     l->out_h = h;
-    l->outputs = w*h*l->out_c;
+    l->outputs = w * h * l->out_c;
 
-    l->output = realloc(l->output, l->batch*l->outputs*sizeof(float));
-    l->delta  = realloc(l->delta, l->batch*l->outputs*sizeof(float));
+    l->output = static_cast<float *>(xrealloc(l->output, l->batch * l->outputs * sizeof(float)));
+    l->delta = static_cast<float *>(xrealloc(l->delta, l->batch * l->outputs * sizeof(float)));
 
 #ifdef GPU
     cuda_free(l->output_gpu);
     cuda_free(l->delta_gpu);
-    l->output_gpu = cuda_make_array(l->output, l->batch*l->outputs);
-    l->delta_gpu  = cuda_make_array(l->delta,  l->batch*l->outputs);
+    l->output_gpu = cuda_make_array(l->output, l->batch * l->outputs);
+    l->delta_gpu = cuda_make_array(l->delta, l->batch * l->outputs);
 #endif
 
 }

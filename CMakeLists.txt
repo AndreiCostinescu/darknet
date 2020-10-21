@@ -30,10 +30,7 @@ configure_file(
 
 file(GLOB sources_src_c "${CMAKE_CURRENT_LIST_DIR}/src/*.c")
 if (NOT MSVC)
-    list(REMOVE_ITEM sources_src_c
-            ${CMAKE_CURRENT_LIST_DIR}/src/gettimeofday.c
-            ${CMAKE_CURRENT_LIST_DIR}/src/getopt.c
-            )
+    list(REMOVE_ITEM sources_src_c ${CMAKE_CURRENT_LIST_DIR}/src/gettimeofday.c ${CMAKE_CURRENT_LIST_DIR}/src/getopt.c)
 endif ()
 list(REMOVE_ITEM sources_src_c ${CMAKE_CURRENT_LIST_DIR}/src/darknet.c)  # only needed for executable and added explicitly there
 file(GLOB sources_src_cpp "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
