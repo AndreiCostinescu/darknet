@@ -680,11 +680,17 @@ float *network_predict_ptr(network *net, float *input) {
     return network_predict(*net, input);
 }
 
-float *network_predict(network net, float *input) {
+float *network_predict(network net, float *input, bool verbose) {
 #ifdef GPU
+    if (verbose) {
+        printf("Running GPU network!\n");
+    }
     if (gpu_index >= 0) return network_predict_gpu(net, input);
 #endif
 
+    if (verbose) {
+        printf("Running CPU network!\n");
+    }
     network_state state = {0};
     state.net = net;
     state.index = 0;
