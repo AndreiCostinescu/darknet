@@ -486,7 +486,6 @@ void scale_weights(layer l, float s) {
     }
 }
 
-
 void pull_weights(layer l) {
     if (l.type == CONVOLUTIONAL) {
         cuda_pull_array(l.biases_gpu, l.biases, l.n);
@@ -519,7 +518,6 @@ void distribute_weights(layer l, layer base) {
         cuda_push_array(l.weights_gpu, base.weights, l.outputs * l.inputs);
     }
 }
-
 
 void merge_updates(layer l, layer base) {
     if (l.type == CONVOLUTIONAL) {
