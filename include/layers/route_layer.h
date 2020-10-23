@@ -1,5 +1,6 @@
 #ifndef ROUTE_LAYER_H
 #define ROUTE_LAYER_H
+
 #include "network.h"
 #include "layers/layer.h"
 
@@ -8,7 +9,8 @@ typedef layer route_layer;
 #ifdef __cplusplus
 extern "C" {
 #endif
-route_layer make_route_layer(int batch, int n, int *input_layers, int *input_size, int groups, int group_id);
+route_layer make_route_layer(int batch, int n, int *input_layers, int *input_size, int groups, int group_id,
+                             int verbose);
 void forward_route_layer(const route_layer l, network_state state);
 void backward_route_layer(const route_layer l, network_state state);
 void resize_route_layer(route_layer *l, network *net);

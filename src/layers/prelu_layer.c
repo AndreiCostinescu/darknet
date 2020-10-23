@@ -5,7 +5,7 @@
 #include "utils/blas.h"
 #include "assert.h"
 
-layer make_prelu_layer(int batch, int h, int w, int c, int n) {
+layer make_prelu_layer(int batch, int h, int w, int c, int n, int verbose) {
     layer l = {(LAYER_TYPE) 0};
     l.type = PRELU;
 
@@ -32,6 +32,7 @@ layer make_prelu_layer(int batch, int h, int w, int c, int n) {
     l.weight_updates = static_cast<float *>(xcalloc(n, sizeof(float)));
 
     l.nweights = n;
+    fprintf(stderr, "m_prelu_layer: %d\n", n);
 
     l.forward = forward_prelu_layer;
     l.backward = backward_prelu_layer;
@@ -50,13 +51,15 @@ layer make_prelu_layer(int batch, int h, int w, int c, int n) {
     }
 #endif
 
-    fprintf(stderr, "prelu   %3d             %4d x%4d x%4d   ->  %4d x%4d x%4d\n", n, l.w, l.h, l.c, l.out_w, l.out_h,
-            l.out_c);
-
+    if (verbose) {
+        fprintf(stderr, "prelu   %3d                %4d x%4d x%4d   ->  %4d x%4d x%4d\n", n, l.w, l.h, l.c, l.out_w,
+                l.out_h, l.out_c);
+    }
     return l;
 }
 
 void forward_prelu_layer(const layer l, network_state net) {
+    printf("Computing forward prelu on CPU");
     int size = l.w * l.h * l.groups, startIndex, mask;
     float alpha, inputValue;
     for (int i = 0; i < l.batch; i++) {

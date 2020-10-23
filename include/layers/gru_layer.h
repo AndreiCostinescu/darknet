@@ -9,7 +9,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-layer make_gru_layer(int batch, int inputs, int outputs, int steps, int batch_normalize);
+layer make_gru_layer(int batch, int inputs, int outputs, int steps, int batch_normalize, int verbose);
 
 void forward_gru_layer(layer l, network_state state);
 void backward_gru_layer(layer l, network_state state);

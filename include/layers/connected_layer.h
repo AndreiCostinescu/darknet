@@ -10,7 +10,8 @@ typedef layer connected_layer;
 #ifdef __cplusplus
 extern "C" {
 #endif
-connected_layer make_connected_layer(int batch, int steps, int inputs, int outputs, ACTIVATION activation, int batch_normalize);
+connected_layer make_connected_layer(int batch, int steps, int inputs, int outputs, ACTIVATION activation,
+                                     int batch_normalize, int verbose);
 size_t get_connected_workspace_size(layer l);
 
 void forward_connected_layer(connected_layer layer, network_state state);
@@ -22,7 +23,8 @@ void statistics_connected_layer(layer l);
 #ifdef GPU
 void forward_connected_layer_gpu(connected_layer layer, network_state state);
 void backward_connected_layer_gpu(connected_layer layer, network_state state);
-void update_connected_layer_gpu(connected_layer layer, int batch, float learning_rate, float momentum, float decay, float loss_scale);
+void update_connected_layer_gpu(connected_layer layer, int batch, float learning_rate, float momentum, float decay,
+                                float loss_scale);
 void push_connected_layer(connected_layer layer);
 void pull_connected_layer(connected_layer layer);
 #endif

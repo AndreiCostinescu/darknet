@@ -8,7 +8,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-layer make_activation_layer(int batch, int inputs, ACTIVATION activation);
+layer make_activation_layer(int batch, int inputs, ACTIVATION activation, int verbose);
 
 void forward_activation_layer(layer l, network_state state);
 void backward_activation_layer(layer l, network_state state);

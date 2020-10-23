@@ -4,12 +4,13 @@
 #include "layers/activations.h"
 #include "layers/layer.h"
 #include "network.h"
+
 #define USET
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-layer make_lstm_layer(int batch, int inputs, int outputs, int steps, int batch_normalize);
+layer make_lstm_layer(int batch, int inputs, int outputs, int steps, int batch_normalize, int verbose);
 
 void forward_lstm_layer(layer l, network_state state);
 void backward_lstm_layer(layer l, network_state state);

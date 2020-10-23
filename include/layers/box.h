@@ -7,7 +7,7 @@
 //    float x, y, w, h;
 //} box;
 
-typedef struct{
+typedef struct {
     float dx, dy, dw, dh;
 } dbox;
 
@@ -21,10 +21,10 @@ typedef struct{
 //} detection;
 
 typedef struct detection_with_class {
-	detection det;
-	// The most probable class id: the best class index in this->prob.
-	// Is filled temporary when processing results, otherwise not initialized
-	int best_class;
+    detection det;
+    // The most probable class id: the best class index in this->prob.
+    // Is filled temporary when processing results, otherwise not initialized
+    int best_class;
 } detection_with_class;
 
 #ifdef __cplusplus
@@ -51,7 +51,8 @@ box encode_box(box b, box anchor);
 
 // Creates array of detections with prob > thresh and fills best_class for them
 // Return number of selected detections in *selected_detections_num
-detection_with_class* get_actual_detections(detection *dets, int dets_num, float thresh, int* selected_detections_num, char **names);
+detection_with_class *get_actual_detections(detection *dets, int dets_num, float thresh, int *selected_detections_num,
+                                            char **names);
 
 #ifdef __cplusplus
 }

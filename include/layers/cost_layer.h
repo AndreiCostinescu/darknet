@@ -1,5 +1,6 @@
 #ifndef COST_LAYER_H
 #define COST_LAYER_H
+
 #include "layers/layer.h"
 #include "network.h"
 
@@ -10,7 +11,7 @@ extern "C" {
 #endif
 COST_TYPE get_cost_type(char *s);
 char *get_cost_string(COST_TYPE a);
-cost_layer make_cost_layer(int batch, int inputs, COST_TYPE cost_type, float scale);
+cost_layer make_cost_layer(int batch, int inputs, COST_TYPE cost_type, float scale, int verbose);
 void forward_cost_layer(const cost_layer l, network_state state);
 void backward_cost_layer(const cost_layer l, network_state state);
 void resize_cost_layer(cost_layer *l, int inputs);

@@ -49,8 +49,8 @@ size_t get_connected_workspace_size(layer l) {
     return 0;
 }
 
-connected_layer
-make_connected_layer(int batch, int steps, int inputs, int outputs, ACTIVATION activation, int batch_normalize) {
+connected_layer make_connected_layer(int batch, int steps, int inputs, int outputs, ACTIVATION activation,
+                                     int batch_normalize, int verbose) {
     int total_batch = batch * steps;
     int i;
     connected_layer l = {(LAYER_TYPE) 0};
@@ -152,7 +152,9 @@ make_connected_layer(int batch, int steps, int inputs, int outputs, ACTIVATION a
     l.workspace_size = get_connected_workspace_size(l);
 #endif  // CUDNN
 #endif  // GPU
-    fprintf(stderr, "connected                            %4d  ->  %4d\n", inputs, outputs);
+    if (verbose) {
+        fprintf(stderr, "connected                            %4d  ->  %4d\n", inputs, outputs);
+    }
     return l;
 }
 
@@ -239,7 +241,6 @@ void backward_connected_layer(connected_layer l, network_state state) {
     if (c) gemm(0, 0, m, n, k, 1, a, k, b, n, 1, c, n);
 }
 
-
 void denormalize_connected_layer(layer l) {
     int i, j;
     for (i = 0; i < l.outputs; ++i) {
@@ -253,7 +254,6 @@ void denormalize_connected_layer(layer l) {
         l.rolling_variance[i] = 1;
     }
 }
-
 
 void statistics_connected_layer(layer l) {
     if (l.batch_normalize) {

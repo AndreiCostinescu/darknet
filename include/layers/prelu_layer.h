@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-layer make_prelu_layer(int batch, int h, int w, int c, int n);
+layer make_prelu_layer(int batch, int h, int w, int c, int n, int verbose);
 
 void forward_prelu_layer(layer l, network_state net);
 
