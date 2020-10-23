@@ -993,8 +993,9 @@ typedef struct box_label {
 
 // parser.c
 LIB_API network *load_network(char *cfg, char *weights, int clear);
+LIB_API network *load_network_verbose(char *cfg, char *weights, int clear, int verbose);
 LIB_API network *load_network_custom(char *cfg, char *weights, int clear, int batch);
-LIB_API network *load_network(char *cfg, char *weights, int clear);
+LIB_API network *load_network_custom_verbose(char *cfg, char *weights, int clear, int batch, int verbose);
 LIB_API void free_network(network net);
 LIB_API void free_network_ptr(network* net);
 
@@ -1007,8 +1008,10 @@ LIB_API void do_nms_obj(detection *dets, int total, int classes, float thresh);
 LIB_API void diounms_sort(detection *dets, int total, int classes, float thresh, NMS_KIND nms_kind, float beta1);
 
 // network.h
-LIB_API float *network_predict(network net, float *input, bool verbose = false);
+LIB_API float *network_predict(network net, float *input);
+LIB_API float *network_predict_verbose(network net, float *input, int verbose);
 LIB_API float *network_predict_ptr(network *net, float *input);
+LIB_API float *network_predict_ptr_verbose(network *net, float *input, int verbose);
 LIB_API detection *get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num, int letter);
 LIB_API det_num_pair* network_predict_batch(network *net, image im, int batch_size, int w, int h, float thresh, float hier, int *map, int relative, int letter);
 LIB_API void free_detections(detection *dets, int n);

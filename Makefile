@@ -51,7 +51,7 @@ ARCH= -gencode arch=compute_75,code=[sm_75,compute_75]
 # ARCH= -gencode arch=compute_62,code=[sm_62,compute_62]
 
 
-VPATH=./src/
+VPATH=./
 EXEC=darknet
 OBJDIR=./obj/
 
@@ -151,14 +151,14 @@ LDFLAGS+= -L/usr/local/zed/lib -lsl_zed
 endif
 endif
 
-OBJ=image_opencv.o http_stream.o gemm.o utils.o dark_cuda.o convolutional_layer.o list.o image.o activations.o im2col.o col2im.o blas.o crop_layer.o dropout_layer.o maxpool_layer.o softmax_layer.o data.o matrix.o network.o connected_layer.o cost_layer.o parser.o option_list.o darknet.o detection_layer.o captcha.o route_layer.o writing.o box.o nightmare.o normalization_layer.o avgpool_layer.o coco.o dice.o yolo.o detector.o layer.o compare.o classifier.o local_layer.o swag.o shortcut_layer.o activation_layer.o rnn_layer.o gru_layer.o rnn.o rnn_vid.o crnn_layer.o demo.o tag.o cifar.o go.o batchnorm_layer.o art.o region_layer.o reorg_layer.o reorg_old_layer.o super.o voxel.o tree.o yolo_layer.o gaussian_yolo_layer.o upsample_layer.o lstm_layer.o conv_lstm_layer.o scale_channels_layer.o sam_layer.o
+OBJ=src/image/image_opencv.o src/image/http_stream.o src/utils/gemm.o src/utils/utils.o src/dark_cuda.o src/layers/convolutional_layer.o src/utils/list.o src/images/image.o src/layers/activations.o src/layers/im2col.o src/layers/col2im.o src/utils/blas.o src/layers/crop_layer.o src/layers/dropout_layer.o src/layers/maxpool_layer.o src/layers/softmax_layer.o src/utils/data.o src/utils/matrix.o src/network.o src/layers/connected_layer.o src/layers/cost_layer.o src/utils/parser.o src/utils/option_list.o src/darknet.o src/layers/detection_layer.o src/applications/captcha.o src/layers/route_layer.o src/utils/writing.o src/layers/box.o src/applications/nightmare.o src/layers/normalization_layer.o src/layers/avgpool_layer.o src/applications/coco.o src/applications/dice.o src/applications/yolo.o src/applications/detector.o src/layers/layer.o src/applications/compare.o src/applications/classifier.o src/layers/local_layer.o src/applications/swag.o src/layers/shortcut_layer.o src/layers/activation_layer.o src/layers/rnn_layer.o src/layers/gru_layer.o src/applications/rnn.o src/applications/rnn_vid.o src/layers/crnn_layer.o src/demo.o src/applications/tag.o src/applications/cifar.o src/applications/go.o src/layers/batchnorm_layer.o src/applications/art.o src/layers/region_layer.o src/layers/reorg_layer.o src/layers/reorg_old_layer.o src/applications/super.o src/applications/voxel.o src/utils/tree.o src/layers/yolo_layer.o src/layers/gaussian_yolo_layer.o src/layers/upsample_layer.o src/layers/lstm_layer.o src/layers/conv_lstm_layer.o src/layers/scale_channels_layer.o src/layers/sam_layer.o
 ifeq ($(GPU), 1)
 LDFLAGS+= -lstdc++
-OBJ+=convolutional_kernels.o activation_kernels.o im2col_kernels.o col2im_kernels.o blas_kernels.o crop_layer_kernels.o dropout_layer_kernels.o maxpool_layer_kernels.o network_kernels.o avgpool_layer_kernels.o
+OBJ+=cuda/layers/activation_kernels.o cuda/layers/avgpool_layer_kernels.o cuda/layers/col2im_kernels.o cuda/layers/convolutional_kernels.o cuda/layers/crop_layer_kernels.o cuda/layers/dropout_layer_kernels.o cuda/layers/im2col_kernels.o cuda/layers/maxpool_layer_kernels.o cuda/layers/prelu_layer_kernels.o cuda/utils/blas_kernels.o cuda/network_kernels.o
 endif
 
 OBJS = $(addprefix $(OBJDIR), $(OBJ))
-DEPS = $(wildcard src/*.h) Makefile include/darknet.h
+DEPS = $(wildcard include/*.h) $(wildcard include/layers/*.h) $(wildcard include/utils/*.h) $(wildcard include/images/*.h) $(wildcard include/applications/*.h) Makefile include/darknet.h
 
 all: $(OBJDIR) backup results setchmod $(EXEC) $(LIBNAMESO) $(APPNAMESO)
 

@@ -62,8 +62,10 @@ void check_error(cudaError_t status)
     {
         const char *s = cudaGetErrorString(status);
         char buffer[256];
+        printf("\nHELLO WORLD\n");
         printf("\n CUDA Error: %s\n", s);
-        snprintf(buffer, 256, "CUDA Error: %s", s);
+        printf("\nHELLO, HELLO WORLD\n");
+        snprintf(buffer, 256, "CUDA Error: %s\nHELLO WORLD!!!\n", s);
 #ifdef WIN32
         getchar();
 #endif

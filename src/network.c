@@ -674,13 +674,20 @@ void top_predictions(network net, int k, int *index) {
     top_k(out, size, k, index);
 }
 
-// A version of network_predict that uses a pointer for the network
-// struct to make the python binding work properly.
-float *network_predict_ptr(network *net, float *input) {
-    return network_predict(*net, input);
+// A version of network_predict that uses a pointer for the network struct to make the python binding work properly.
+float *network_predict_ptr_verbose(network *net, float *input, int verbose) {
+    return network_predict_verbose(*net, input, verbose);
 }
 
-float *network_predict(network net, float *input, bool verbose) {
+float *network_predict_ptr(network *net, float *input) {
+    return network_predict_ptr_verbose(net, input, 0);
+}
+
+float *network_predict(network net, float *input) {
+    return network_predict_verbose(net, input, 0);
+}
+
+float *network_predict_verbose(network net, float *input, int verbose) {
 #ifdef GPU
     if (verbose) {
         printf("Running GPU network!\n");
