@@ -32,7 +32,6 @@ layer make_prelu_layer(int batch, int h, int w, int c, int n, int verbose) {
     l.weight_updates = static_cast<float *>(xcalloc(n, sizeof(float)));
 
     l.nweights = n;
-    fprintf(stderr, "m_prelu_layer: %d\n", n);
 
     l.forward = forward_prelu_layer;
     l.backward = backward_prelu_layer;

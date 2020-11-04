@@ -522,6 +522,34 @@ convolutional_layer make_convolutional_layer(
         int dilation, int padding, ACTIVATION activation, int batch_normalize, int binary, int xnor, int adam,
         int use_bin_output, int index, int antialiasing, convolutional_layer *share_layer, int assisted_excitation,
         int deform, int train, int verbose) {
+    /*
+    printf("CONV: batch = %d\n", batch);
+    printf("CONV: steps = %d\n", steps);
+    printf("CONV: h = %d\n", h);
+    printf("CONV: w = %d\n", w);
+    printf("CONV: c = %d\n", c);
+    printf("CONV: n = %d\n", n);
+    printf("CONV: groups = %d\n", groups);
+    printf("CONV: size = %d\n", size);
+    printf("CONV: stride_x = %d\n", stride_x);
+    printf("CONV: stride_y = %d\n", stride_y);
+    printf("CONV: dilation = %d\n", dilation);
+    printf("CONV: padding = %d\n", padding);
+    printf("CONV: activation = %d\n", activation);
+    printf("CONV: batch_normalize = %d\n", batch_normalize);
+    printf("CONV: binary = %d\n", binary);
+    printf("CONV: xnor = %d\n", xnor);
+    printf("CONV: adam = %d\n", adam);
+    printf("CONV: use_bin_output = %d\n", use_bin_output);
+    printf("CONV: index = %d\n", index);
+    printf("CONV: antialiasing = %d\n", antialiasing);
+    printf("CONV: assisted_excitation = %d\n", assisted_excitation);
+    printf("CONV: deform = %d\n", deform);
+    printf("CONV: train = %d\n", train);
+    printf("CONV: verbose = %d\n", verbose);
+    exit(1);
+    //*/
+
     int total_batch = batch * steps;
     int i;
     convolutional_layer l = {(LAYER_TYPE) 0};
@@ -787,10 +815,10 @@ convolutional_layer make_convolutional_layer(
 #endif  // GPU
     l.workspace_size = get_convolutional_workspace_size(l);
 
+    l.bflops = (float) ((2.0 * l.nweights * l.out_h * l.out_w) / 1000000000.);
+    if (l.xnor) l.bflops = l.bflops / 32;
     if (verbose) {
         //fprintf(stderr, "conv  %5d %2d x%2d /%2d  %4d x%4d x%4d   ->  %4d x%4d x%4d\n", n, size, size, stride, w, h, c, l.out_w, l.out_h, l.out_c);
-        l.bflops = (2.0 * l.nweights * l.out_h * l.out_w) / 1000000000.;
-        if (l.xnor) l.bflops = l.bflops / 32;
         if (l.xnor && l.use_bin_output) fprintf(stderr, "convXB");
         else if (l.xnor) fprintf(stderr, "convX ");
         else if (l.share_layer) fprintf(stderr, "convS ");

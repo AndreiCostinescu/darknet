@@ -152,14 +152,37 @@ half *cuda_make_f16_from_f32_array(float *src, size_t n) {
     return dst16;
 }
 
+void printData(float *data, int size, const char* name) {
+    printf("%s:\n", name);
+    printf("Size = %d\n", size);
+    int vectorMinSize = min(20, size);
+    int vectorMaxSize = max(size - 20, 0);
+    auto *vectorMin = (float *) xcalloc(vectorMinSize, sizeof(float));
+    auto *vectorMax = (float *) xcalloc(vectorMaxSize, sizeof(float));
+    cudaMemcpy(vectorMin, data, vectorMinSize, cudaMemcpyDeviceToHost);
+    cudaMemcpy(vectorMax, data + vectorMaxSize, size - vectorMaxSize, cudaMemcpyDeviceToHost);
+    for (int j = 0; j < vectorMinSize; j++) {
+        printf("%f, ", vectorMin[j]);
+    }
+    printf("\n");
+    for (int j = vectorMaxSize; j < size; j++) {
+        printf("%f, ", vectorMax[j]);
+    }
+    printf("\n");
+    delete vectorMax;
+    delete vectorMin;
+}
+
 void forward_convolutional_layer_gpu(convolutional_layer l, network_state state) {
     //fill_ongpu(l.outputs*l.batch, 0, l.output_gpu, 1);
     if (l.binary) {
+        printf("Binary convolution!\n");
         binarize_weights_gpu(l.weights_gpu, l.n, (l.c / l.groups) * l.size * l.size, l.binary_weights_gpu);
         swap_binary(&l);
     }
 
     if (l.xnor) {
+        printf("XNOR convolution!\n");
         if (!l.align_bit_weights_gpu || state.train) {
             //binarize_weights_gpu(l.weights_gpu, l.n, (l.c / l.groups)*l.size*l.size, l.binary_weights_gpu);
 
@@ -409,6 +432,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
     }
 
     if (l.xnor) {
+        printf("XNOR convolution!\n");
         swap_binary(&l);
         binarize_gpu(state.input, l.c * l.h * l.w * l.batch, l.binary_input_gpu);
         state.input = l.binary_input_gpu;
@@ -424,9 +448,11 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
     //if (state.use_mixed_precision) {
     int iteration_num = get_current_iteration(
             state.net); // (*state.net.seen) / (state.net.batch*state.net.subdivisions);
+    printf("CONVOLUTION FORWARD: iteration_num = %d\n", iteration_num);
     if (state.index != 0 && state.net.cudnn_half && !l.xnor &&
         (!state.train || (iteration_num > 3 * state.net.burn_in) && state.net.loss_scale != 1) &&
         (l.c / l.groups) % 8 == 0 && l.n % 8 == 0 && l.groups <= 1 && l.size > 1) {
+        printf("IF-BRANCH!\n");
         //printf("\n CUDNN_HALF!!! state.index = %d \n", state.index);
 
         // Note: For improved performance it is advised to use beta[0] = 0.0.
@@ -459,19 +485,9 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
         cuda_convert_f32_to_f16(state.input, input16_size, input16);
 
         //fill_ongpu(output16_size / 2, 0, (float *)output16, 1);
-        CHECK_CUDNN(cudnnConvolutionForward(cudnn_handle(),
-                                            &alpha,
-                                            l.srcTensorDesc16,
-                                            input16,
-                                            l.weightDesc16,
-                                            l.weights_gpu16,
-                                            l.convDesc,
-                                            l.fw_algo16,
-                                            state.workspace,
-                                            l.workspace_size,
-                                            &beta,
-                                            l.dstTensorDesc16,
-                                            output16));
+        CHECK_CUDNN(cudnnConvolutionForward(
+                cudnn_handle(), &alpha, l.srcTensorDesc16, input16, l.weightDesc16, l.weights_gpu16, l.convDesc,
+                l.fw_algo16, state.workspace, l.workspace_size, &beta, l.dstTensorDesc16, output16));
 
 
         if (l.batch_normalize) {
@@ -518,6 +534,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
             add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.n, l.out_w * l.out_h);
         }
     } else {
+        printf("ELSE BRANCH!\n");
 
         //#else
         /*
@@ -530,19 +547,27 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
         if (weights_nan_inf) getchar();
         */
 
-        CHECK_CUDNN(cudnnConvolutionForward(cudnn_handle(),
-                                            &alpha, //&one,
-                                            l.srcTensorDesc,
-                                            state.input,
-                                            l.weightDesc,
-                                            l.weights_gpu,
-                                            l.convDesc,
-                                            l.fw_algo,
-                                            state.workspace,
-                                            l.workspace_size,
-                                            &beta,  //&one,
-                                            l.dstTensorDesc,
-                                            l.output_gpu));
+
+        for (int i=0; i<l.nweights; i++) {
+            printf("%f, ", l.weights[i]);
+        }
+        printf("\n");
+        pull_convolutional_layer(l);
+        for (int i=0; i<l.nweights; i++) {
+            printf("%f, ", l.weights[i]);
+        }
+        printf("\n");
+
+        // printData(state.input, l.batch * l.inputs, "State input in else branch");
+        // printData(state.workspace, l.workspace_size, "State workspace in else branch");
+        // printData(l.weights_gpu, l.nweights, "Layer weights in else branch");
+        // printData(l.output_gpu, l.batch * l.outputs, "Layer output before convolution");
+
+        CHECK_CUDNN(cudnnConvolutionForward(
+                cudnn_handle(), &alpha, l.srcTensorDesc, state.input, l.weightDesc, l.weights_gpu, l.convDesc,
+                l.fw_algo, state.workspace, l.workspace_size, &beta, l.dstTensorDesc, l.output_gpu));
+
+        printData(l.output_gpu, l.batch * l.outputs, "Layer output after convolution");
 
         //cudaDeviceSynchronize();
         if (l.batch_normalize) {
@@ -553,6 +578,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
         //#endif    // CUDNN_HALF
     }
 
+    exit(0);
 
 #else
     fill_ongpu(l.outputs*l.batch, 0, l.output_gpu, 1);

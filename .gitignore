@@ -27,6 +27,7 @@ build/darknet/*
 build_*/
 !build/darknet/YoloWrapper.cs
 .fuse*
+*.weight
 *.weights
 build/*.cmake
 build/*.ninja

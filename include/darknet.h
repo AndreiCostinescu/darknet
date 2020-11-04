@@ -193,6 +193,7 @@ typedef enum {
     EMPTY,
     BLANK,
     PRELU,
+    IDENTITY,
     CONTRASTIVE
 } LAYER_TYPE;
 

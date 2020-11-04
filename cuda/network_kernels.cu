@@ -72,10 +72,12 @@ void forward_network_gpu(network net, network_state state) {
 
     //printf("\n");
     state.workspace = net.workspace;
-    int i;
+    int i, j;
     for (i = 0; i < net.n; ++i) {
+        printf("At layer i = %d, ", i);
         state.index = i;
         layer l = net.layers[i];
+        printf("%s\n", get_layer_string(l.type));
         if (l.delta_gpu && state.train) {
             fill_ongpu(l.outputs * l.batch, 0, l.delta_gpu, 1);
         }
@@ -84,7 +86,25 @@ void forward_network_gpu(network net, network_state state) {
             start_time = get_time_point();
         }
 
+        printf("Forwarding layer %s...\n", get_layer_string(l.type));
+        printf("Layer inputs: ");
+        int inputSize = min(20, l.batch * l.inputs);
+        auto *input = (float *) xcalloc(inputSize, sizeof(float));
+        cudaMemcpy(input, state.input, inputSize, cudaMemcpyDeviceToHost);
+        for (j = 0; j < inputSize; j++) {
+            printf("%f, ", input[j]);
+        }
+        printf("\n");
         l.forward_gpu(l, state);
+        printf("Layer outputs: ");
+        int outputSize = min(20, l.batch * l.outputs);
+        auto *output = (float *) xcalloc(outputSize, sizeof(float));
+        cudaMemcpy(output, l.output_gpu, outputSize, cudaMemcpyDeviceToHost);
+        for (j = 0; j < outputSize; j++) {
+            printf("%f, ", output[j]);
+        }
+        printf("\n");
+        printf("Forwarded layer %s!\n", get_layer_string(l.type));
 
         if (net.benchmark_layers) {
             CHECK_CUDA(cudaDeviceSynchronize());
@@ -658,6 +678,7 @@ float *network_predict_gpu(network net, float *input) {
     if (net.gpu_index != cuda_get_device())
         cuda_set_device(net.gpu_index);
     int size = get_network_input_size(net) * net.batch;
+    printf("Network size: %d\n", size);
     network_state state;
     state.index = 0;
     state.net = net;
@@ -668,7 +689,9 @@ float *network_predict_gpu(network net, float *input) {
     state.truth = 0;
     state.train = 0;
     state.delta = 0;
+    printf("Forwarding gpu...\n");
     forward_network_gpu(net, state);
+    printf("Forwarded gpu!\n");
     float *out = get_network_output_gpu(net);
     //cuda_free(state.input);   // will be freed in the free_network()
     return out;

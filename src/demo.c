@@ -67,7 +67,9 @@ void *fetch_in_thread(void *ptr) {
 #ifndef REALSENSE
             error("Program was not compiled with REALSENSE support...");
 #else
+            printf("Getting image...\n");
             in_s = get_image_from_realsense(net.w, net.h, net.c, &in_img, &in_depth, dont_close_stream, letter_box);
+            printf("Got image!\n");
 #endif
         } else {
             if (letter_box) {
@@ -105,7 +107,9 @@ void *detect_in_thread(void *ptr) {
 
         layer l = net.layers[net.n - 1];
         float *X = det_s.data;
+        printf("Predicting data...\n");
         float *prediction = network_predict(net, X);
+        printf("Predicted image!\n");
 
         if (input_realsense) {
             cv_depth_images[demo_index] = det_depth;
@@ -225,15 +229,21 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
     if (custom_create_thread(&fetch_thread, 0, fetch_in_thread, 0)) error("Thread creation failed");
     if (custom_create_thread(&detect_thread, 0, detect_in_thread, 0)) error("Thread creation failed");
 
+    printf("fetching in thread...\n");
     fetch_in_thread_sync(0); //fetch_in_thread(0);
+    printf("fetched in thread!\n");
     det_img = in_img;
     if (input_realsense) {
         det_depth = in_depth;
     }
     det_s = in_s;
 
+    printf("fetching in thread...\n");
     fetch_in_thread_sync(0); //fetch_in_thread(0);
+    printf("fetched in thread!\n");
+    printf("detecting in thread...\n");
     detect_in_thread_sync(0); //fetch_in_thread(0);
+    printf("detected in thread!\n");
     det_img = in_img;
     if (input_realsense) {
         det_depth = in_depth;

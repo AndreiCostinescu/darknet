@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <math.h>
 
 #include "utils/blas.h"
 #include "utils/list.h"
@@ -24,6 +25,7 @@
 #include "layers/detection_layer.h"
 #include "layers/dropout_layer.h"
 #include "layers/gru_layer.h"
+#include "layers/identity_layer.h"
 #include "layers/local_layer.h"
 #include "layers/lstm_layer.h"
 #include "layers/conv_lstm_layer.h"
@@ -85,6 +87,7 @@ LAYER_TYPE string_to_layer_type(char *type) {
     if (strcmp(type, "[route]") == 0) return ROUTE;
     if (strcmp(type, "[upsample]") == 0) return UPSAMPLE;
     if (strcmp(type, "[prelu]") == 0) return PRELU;
+    if (strcmp(type, "[identity]") == 0) return IDENTITY;
     if (strcmp(type, "[empty]") == 0) return EMPTY;
     return BLANK;
 }
@@ -1047,6 +1050,11 @@ layer parse_prelu(list *options, size_params params, int verbose) {
     return l;
 }
 
+layer parse_identity(list *options, size_params params, int verbose) {
+    layer l = make_identity_layer(params.batch, params.h, params.w, params.c, verbose);
+    return l;
+}
+
 layer parse_upsample(list *options, size_params params, network net, int verbose) {
     int stride = option_find_int(options, "stride", 2);
     layer l = make_upsample_layer(params.batch, params.w, params.h, params.c, stride, verbose);
@@ -1378,6 +1386,8 @@ network parse_network_cfg_custom_verbose(char *filename, int batch, int time_ste
             l = parse_activation(options, params, verbose);
         } else if (lt == PRELU) {
             l = parse_prelu(options, params, verbose);
+        } else if (lt == IDENTITY) {
+            l = parse_identity(options, params, verbose);
         } else if (lt == RNN) {
             l = parse_rnn(options, params, verbose);
         } else if (lt == GRU) {
@@ -1954,29 +1964,52 @@ void transpose_matrix(float *a, int rows, int cols) {
     free(transpose);
 }
 
+int myMin(int a, int b) {
+    return (a < b) ? a : b;
+}
+
+int myMax(int a, int b) {
+    return (a > b) ? a : b;
+}
+
+void printWeights(float *weight, int size, const char *name) {
+    printf("LOAD %s: %d\n", name, size);
+    int i, nrOutput = 10;
+    printf("First %d weights: ", nrOutput);
+    for (i = 0; i < myMin(nrOutput, size); i++) {
+        printf("%lf, ", weight[i]);
+    }
+    printf("\n");
+    printf("Last %d weights: ", nrOutput);
+    for (i = myMax(size - nrOutput, 0); i < size; i++) {
+        printf("%lf, ", weight[i]);
+    }
+    printf("\n");
+}
+
+int loadWeight(FILE *fp, float *weight, int size, const char *name, int layerIndex) {
+    int readBytes = fread(weight, sizeof(float), size, fp);
+    if (readBytes < size) {
+        printf("\n Warning: Unexpected end of weights-file! %s - l.index = %d; Missing %d bytes \n",
+               name, layerIndex, size - readBytes);
+    }
+    printWeights(weight, size, name);
+    return size;
+}
+
 int load_connected_weights(layer l, FILE *fp, int transpose) {
     int numLayerWeights = 0;
-    fread(l.biases, sizeof(float), l.outputs, fp);
-    printf("LOAD FC BIAS: %d\n", l.outputs);
-    numLayerWeights += l.outputs;
-    fread(l.weights, sizeof(float), l.outputs * l.inputs, fp);
-    printf("LOAD FC BIAS: %d\n", l.outputs * l.inputs);
-    numLayerWeights += l.outputs * l.inputs;
+    numLayerWeights += loadWeight(fp, l.biases, l.outputs, "FC BIAS", l.index);
+    numLayerWeights += loadWeight(fp, l.weights, l.outputs * l.inputs, "FC WEIGHT", l.index);
     if (transpose) {
         transpose_matrix(l.weights, l.inputs, l.outputs);
     }
     //printf("Biases: %f mean %f variance\n", mean_array(l.biases, l.outputs), variance_array(l.biases, l.outputs));
     //printf("Weights: %f mean %f variance\n", mean_array(l.weights, l.outputs*l.inputs), variance_array(l.weights, l.outputs*l.inputs));
     if (l.batch_normalize && (!l.dontloadscales)) {
-        fread(l.scales, sizeof(float), l.outputs, fp);
-        printf("LOAD FC SCALES: %d\n", l.outputs);
-        numLayerWeights += l.outputs;
-        fread(l.rolling_mean, sizeof(float), l.outputs, fp);
-        printf("LOAD FC ROLLING_MEAN: %d\n", l.outputs);
-        numLayerWeights += l.outputs;
-        fread(l.rolling_variance, sizeof(float), l.outputs, fp);
-        printf("LOAD FC ROLLING_VARIANCE: %d\n", l.outputs);
-        numLayerWeights += l.outputs;
+        numLayerWeights += loadWeight(fp, l.scales, l.outputs, "FC SCALES", l.index);
+        numLayerWeights += loadWeight(fp, l.rolling_mean, l.outputs, "FC ROLLING_MEAN", l.index);
+        numLayerWeights += loadWeight(fp, l.rolling_variance, l.outputs, "FC ROLLING_VARIANCE", l.index);
         //printf("Scales: %f mean %f variance\n", mean_array(l.scales, l.outputs), variance_array(l.scales, l.outputs));
         //printf("rolling_mean: %f mean %f variance\n", mean_array(l.rolling_mean, l.outputs), variance_array(l.rolling_mean, l.outputs));
         //printf("rolling_variance: %f mean %f variance\n", mean_array(l.rolling_variance, l.outputs), variance_array(l.rolling_variance, l.outputs));
@@ -1990,18 +2023,7 @@ int load_connected_weights(layer l, FILE *fp, int transpose) {
 }
 
 int load_prelu_weights(layer l, FILE *fp) {
-    int numLayerWeights = 0;
-    fread(l.weights, sizeof(float), l.n, fp);
-    printf("LOAD PRELU WEIGHTS: %d\n", l.n);
-    numLayerWeights += l.n;
-    /*
-    fprintf(stderr, "Read %d values:\n", l.n);
-    fprintf(stderr, "\t");
-    for (int i = 0; i < l.n; i++) {
-        fprintf(stderr, "%lf; ", l.weights[i]);
-    }
-    fprintf(stderr, "\n");
-    //*/
+    int numLayerWeights = loadWeight(fp, l.weights, l.n, "PRELU WEIGHTS", l.index);
 #ifdef GPU
     if (gpu_index >= 0) {
         push_prelu_layer(l);
@@ -2012,18 +2034,10 @@ int load_prelu_weights(layer l, FILE *fp) {
 
 int load_batchnorm_weights(layer l, FILE *fp) {
     int numLayerWeights = 0;
-    fread(l.biases, sizeof(float), l.c, fp);
-    printf("LOAD BN BIAS: %d\n", l.c);
-    numLayerWeights += l.c;
-    fread(l.scales, sizeof(float), l.c, fp);
-    printf("LOAD BN SCALES: %d\n", l.c);
-    numLayerWeights += l.c;
-    fread(l.rolling_mean, sizeof(float), l.c, fp);
-    printf("LOAD BN ROLLING_MEAN: %d\n", l.c);
-    numLayerWeights += l.c;
-    fread(l.rolling_variance, sizeof(float), l.c, fp);
-    printf("LOAD BN ROLLING_VARIANCE: %d\n", l.c);
-    numLayerWeights += l.c;
+    numLayerWeights += loadWeight(fp, l.biases, l.c, "BN BIAS", l.index);
+    numLayerWeights += loadWeight(fp, l.scales, l.c, "BN SCALES", l.index);
+    numLayerWeights += loadWeight(fp, l.rolling_mean, l.c, "BN ROLLING_MEAN", l.index);
+    numLayerWeights += loadWeight(fp, l.rolling_variance, l.c, "BN ROLLING_VARIANCE", l.index);
 #ifdef GPU
     if (gpu_index >= 0) {
         push_batchnorm_layer(l);
@@ -2075,31 +2089,11 @@ int load_convolutional_weights(layer l, FILE *fp) {
         //return;
     }
     int numLayerWeights = 0;
-    int num = l.nweights;
-    int read_bytes;
-    read_bytes = fread(l.biases, sizeof(float), l.n, fp);
-    printf("LOAD CONV BIAS: %d\n", l.n);
-    numLayerWeights += l.n;
-    if (read_bytes > 0 && read_bytes < l.n)
-        printf("\n Warning: Unexpected end of wights-file! l.biases - l.index = %d \n", l.index);
-    //fread(l.weights, sizeof(float), num, fp); // as in connected layer
+    numLayerWeights += loadWeight(fp, l.biases, l.n, "CONV BIAS", l.index);
     if (l.batch_normalize && (!l.dontloadscales)) {
-        read_bytes = fread(l.scales, sizeof(float), l.n, fp);
-        printf("LOAD CONV SCALES: %d\n", l.n);
-        numLayerWeights += l.n;
-        if (read_bytes > 0 && read_bytes < l.n)
-            printf("\n Warning: Unexpected end of wights-file! l.scales - l.index = %d \n", l.index);
-        read_bytes = fread(l.rolling_mean, sizeof(float), l.n, fp);
-        numLayerWeights += l.n;
-        printf("LOAD CONV ROLLING_MEAN: %d\n", l.n);
-        if (read_bytes > 0 && read_bytes < l.n) {
-            printf("\n Warning: Unexpected end of wights-file! l.rolling_mean - l.index = %d \n", l.index);
-        }
-        read_bytes = fread(l.rolling_variance, sizeof(float), l.n, fp);
-        printf("LOAD CONV ROLLING_VARIANCE: %d\n", l.n);
-        numLayerWeights += l.n;
-        if (read_bytes > 0 && read_bytes < l.n)
-            printf("\n Warning: Unexpected end of wights-file! l.rolling_variance - l.index = %d \n", l.index);
+        numLayerWeights += loadWeight(fp, l.scales, l.n, "CONV SCALES", l.index);
+        numLayerWeights += loadWeight(fp, l.rolling_mean, l.n, "CONV ROLLING_MEAN", l.index);
+        numLayerWeights += loadWeight(fp, l.rolling_variance, l.n, "CONV ROLLING_VARIANCE", l.index);
         if (1 == 0) {
             int i;
             for (i = 0; i < l.n; ++i) {
@@ -2116,13 +2110,7 @@ int load_convolutional_weights(layer l, FILE *fp) {
             fill_cpu(l.n, 0, l.rolling_variance, 1);
         }
     }
-    read_bytes = fread(l.weights, sizeof(float), num, fp);
-    printf("LOAD CONV WEIGHTS: %d\n", num);
-    numLayerWeights += num;
-    // CHANGED THIS!!!!!!! from l.n to num
-    if (read_bytes > 0 && read_bytes < num) {
-        printf("\n Warning: Unexpected end of wights-file! l.weights - l.index = %d \n", l.index);
-    }
+    numLayerWeights += loadWeight(fp, l.weights, l.nweights, "CONV WEIGHTS", l.index);
     //if(l.adam){
     //    fread(l.m, sizeof(float), num, fp);
     //    fread(l.v, sizeof(float), num, fp);
@@ -2141,20 +2129,13 @@ int load_convolutional_weights(layer l, FILE *fp) {
 }
 
 int load_shortcut_weights(layer l, FILE *fp) {
-    int num = l.nweights;
-    int read_bytes;
-    read_bytes = fread(l.weights, sizeof(float), num, fp);
-    printf("LOAD SHORTCUT WEIGHTS: %d\n", num);
-    if (read_bytes > 0 && read_bytes < num)
-        printf("\n Warning: Unexpected end of wights-file! l.weights - l.index = %d \n", l.index);
-    //for (int i = 0; i < l.nweights; ++i) printf(" %f, ", l.weights[i]);
-    //printf(" read_bytes = %d \n\n", read_bytes);
+    int numLayerWeights = loadWeight(fp, l.weights, l.nweights, "SHORTCUT WEIGHTS", l.index);
 #ifdef GPU
     if (gpu_index >= 0) {
         push_shortcut_layer(l);
     }
 #endif
-    return num;
+    return numLayerWeights;
 }
 
 void load_weights_upto(network *net, char *filename, int cutoff) {
@@ -2189,6 +2170,8 @@ void load_weights_upto(network *net, char *filename, int cutoff) {
     printf(", trained: %.0f K-images (%.0f Kilo-batches_64) \n", (float) (*net->seen / 1000),
            (float) (*net->seen / 64000));
     int transpose = (major > 1000) || (minor > 1000);
+    printf("CUR_ITERATION: %d\n", *net->cur_iteration);
+    printf("TRANSPOSE: %d\n", transpose);
 
     int i;
     int numberNetworkWeights = 0;
