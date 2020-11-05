@@ -1,12 +1,15 @@
 #ifdef _MSC_VER
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#define CLOCK_REALTIME (1)
+#endif
+
 #include <winsock2.h>
+#include <windows.h>
+#include <winnt.h>
 #include <stdint.h>
 #include <time.h>
 #include "darknet.h"
 
-#define CLOCK_REALTIME (1)
 #define BILLION (1E9)
 
 #ifndef timersub
@@ -25,6 +28,11 @@
 extern "C" {
 #endif
 
+struct timespec {
+        time_t tv_sec;
+        long tv_nsec;
+};
+
 static unsigned char g_first_time = 1;
 static LARGE_INTEGER g_counts_per_sec;
 
@@ -33,6 +41,4 @@ int clock_gettime(int, struct timespec*);
 
 #ifdef __cplusplus
 }
-#endif
-
 #endif

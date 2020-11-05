@@ -8,7 +8,7 @@
 #include "dark_cuda.h"
 #ifdef WIN32
 #include <time.h>
-#include "gettimeofday.h"
+#include "utils/gettimeofday.h"
 #else
 #include <sys/time.h>
 #endif

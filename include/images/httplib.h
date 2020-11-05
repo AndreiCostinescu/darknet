@@ -65,13 +65,13 @@
 #define _CRT_NONSTDC_NO_DEPRECATE
 #endif //_CRT_NONSTDC_NO_DEPRECATE
 
-#if defined(_MSC_VER)
 #ifdef _WIN64
 using ssize_t = __int64;
 #else
 using ssize_t = int;
 #endif
 
+#if defined(_MSC_VER)
 #if _MSC_VER < 1900
 #define snprintf _snprintf_s
 #endif
