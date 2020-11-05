@@ -29,9 +29,6 @@ configure_file(
 ### Collect all source files
 
 file(GLOB sources_src_c "${CMAKE_CURRENT_LIST_DIR}/src/*.c")
-if (NOT MSVC)
-    list(REMOVE_ITEM sources_src_c ${CMAKE_CURRENT_LIST_DIR}/src/gettimeofday.c ${CMAKE_CURRENT_LIST_DIR}/src/getopt.c)
-endif ()
 list(REMOVE_ITEM sources_src_c ${CMAKE_CURRENT_LIST_DIR}/src/darknet.c)  # only needed for executable and added explicitly there
 file(GLOB sources_src_cpp "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
 list(REMOVE_ITEM sources_src_cpp ${CMAKE_CURRENT_LIST_DIR}/src/yolo_v2_class.cpp)  # not needed for executable but for library
@@ -51,6 +48,9 @@ file(GLOB sources_src_layers_cpp "${CMAKE_CURRENT_LIST_DIR}/src/layers/*.cpp")
 SET(SOURCES_SRC_LAYERS ${sources_src_layers_c} ${sources_src_layers_cpp})
 
 file(GLOB sources_src_utils_c "${CMAKE_CURRENT_LIST_DIR}/src/utils/*.c")
+if (NOT WIN32)
+    list(REMOVE_ITEM sources_src_utils_c ${CMAKE_CURRENT_LIST_DIR}/src/utils/gettimeofday.c ${CMAKE_CURRENT_LIST_DIR}/src/utils/getopt.c)
+endif ()
 file(GLOB sources_src_utils_cpp "${CMAKE_CURRENT_LIST_DIR}/src/utils/*.cpp")
 SET(SOURCES_SRC_UTILS ${sources_src_utils_c} ${sources_src_utils_cpp})
 
