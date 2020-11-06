@@ -62,7 +62,7 @@ int time_comparator(const void *pa, const void *pb) {
 void forward_network_gpu_verbose(network net, network_state state, int verbose) {
     static time_benchmark_layers *avg_time_per_layer = NULL;
     static time_benchmark_layers *sorted_avg_time_per_layer = NULL;
-    double start_time, end_time;
+    double start_time, end_time, full_forward_time = 0.0;
     int benchmark = net.benchmark_layers;
     // benchmark = true;
     // verbose = true;
@@ -120,6 +120,7 @@ void forward_network_gpu_verbose(network net, network_state state, int verbose) 
             CHECK_CUDA(cudaDeviceSynchronize());
             end_time = get_time_point();
             const double took_time = (end_time - start_time) / 1000;
+            full_forward_time += took_time;
             const double alpha = 0.9;
             if (avg_time_per_layer[i].time == 0) {
                 avg_time_per_layer[i].layer_id = i;
@@ -128,8 +129,10 @@ void forward_network_gpu_verbose(network net, network_state state, int verbose) 
             } else avg_time_per_layer[i].time = avg_time_per_layer[i].time * alpha + took_time * (1 - alpha);
 
             sorted_avg_time_per_layer[i] = avg_time_per_layer[i];
-            printf("\n fw-layer %d - type: %s - %lf ms - avg_time %lf ms \n", i, get_layer_string(l.type), took_time,
-                   avg_time_per_layer[i].time);
+            if (verbose) {
+                printf("\nfw-layer %d - type: %s - %lf ms - avg_time %lf ms \n", i, get_layer_string(l.type), took_time,
+                       avg_time_per_layer[i].time);
+            }
         }
 
         if (net.wait_stream)
@@ -167,7 +170,7 @@ void forward_network_gpu_verbose(network net, network_state state, int verbose) 
     }
 
     if (benchmark) {
-        printf("\n\nSorted by time (forward):\n");
+        printf("\n\nSorted by time (forward): %lf\n", full_forward_time);
         qsort(sorted_avg_time_per_layer, net.n, sizeof(time_benchmark_layers), time_comparator);
         for (i = 0; i < net.n; ++i) {
             printf("%d - fw-sort-layer %d - type: %s (%d) - avg_time %lf ms \n", i,
