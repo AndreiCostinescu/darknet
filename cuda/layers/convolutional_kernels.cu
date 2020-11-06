@@ -152,32 +152,6 @@ half *cuda_make_f16_from_f32_array(float *src, size_t n) {
     return dst16;
 }
 
-void printData(float *data, int size, const char *name) {
-    printf("%s:\n", name);
-    printf("Size = %d\n", size);
-    int vectorPrintSize = min(100, size);
-    // vectorPrintSize = size;
-    int vectorMinStart = 0;
-    int vectorMaxStart = size - vectorPrintSize;
-    auto *vectorMin = (float *) xcalloc(vectorPrintSize, sizeof(float));
-    auto *vectorMax = (float *) xcalloc(vectorPrintSize, sizeof(float));
-    if (data == NULL) {
-        printf("DATA is NULL!!!\n");
-    }
-    check_error(cudaMemcpy(vectorMin, data + vectorMinStart, vectorPrintSize * sizeof(float), cudaMemcpyDeviceToHost));
-    check_error(cudaMemcpy(vectorMax, data + vectorMaxStart, vectorPrintSize * sizeof(float), cudaMemcpyDeviceToHost));
-    for (int j = 0; j < vectorPrintSize; j++) {
-        printf("%f, ", vectorMin[j]);
-    }
-    printf("\n");
-    for (int j = 0; j < vectorPrintSize; j++) {
-        printf("%f, ", vectorMax[j]);
-    }
-    printf("\n");
-    delete vectorMax;
-    delete vectorMin;
-}
-
 void forward_convolutional_layer_gpu(convolutional_layer l, network_state state) {
     // fill_ongpu(l.outputs*l.batch, 0, l.output_gpu, 1);
     if (l.binary) {

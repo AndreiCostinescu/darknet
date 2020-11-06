@@ -81,6 +81,7 @@ void forward_network_gpu_verbose(network net, network_state state, int verbose) 
     state.workspace_size = net.workspace_size;
     int i, j;
     for (i = 0; i < net.n; ++i) {
+        // verbose = (i == 0);
         state.index = i;
         layer l = net.layers[i];
         if (l.delta_gpu && state.train) {
@@ -94,25 +95,11 @@ void forward_network_gpu_verbose(network net, network_state state, int verbose) 
         if (verbose) {
             printf("At layer i = %d, %s\n", i, get_layer_string(l.type));
             printf("Forwarding layer %s...\n", get_layer_string(l.type));
-            printf("Layer inputs: ");
-            int inputSize = min(20, l.batch * l.inputs);
-            auto *input = (float *) xcalloc(inputSize, sizeof(float));
-            cudaMemcpy(input, state.input, inputSize * sizeof(float), cudaMemcpyDeviceToHost);
-            for (j = 0; j < inputSize; j++) {
-                printf("%f, ", input[j]);
-            }
-            printf("\n");
+            printData(state.input, l.batch * l.inputs, "Layer inputs");
         }
         l.forward_gpu(l, state);
         if (verbose) {
-            printf("Layer outputs: ");
-            int outputSize = min(20, l.batch * l.outputs);
-            auto *output = (float *) xcalloc(outputSize, sizeof(float));
-            cudaMemcpy(output, l.output_gpu, outputSize * sizeof(float), cudaMemcpyDeviceToHost);
-            for (j = 0; j < outputSize; j++) {
-                printf("%f, ", output[j]);
-            }
-            printf("\n");
+            printData(l.output_gpu, l.batch * l.outputs, "Layer outputs");
             printf("Forwarded layer %s!\n", get_layer_string(l.type));
         }
 

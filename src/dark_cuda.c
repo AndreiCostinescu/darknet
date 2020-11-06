@@ -498,6 +498,32 @@ void show_cuda_cudnn_info() {
     fprintf(stderr, " \n");
 }
 
+void printData(float *data, int size, const char *name) {
+    printf("%s:\n", name);
+    printf("Size = %d\n", size);
+    int vectorPrintSize = min(100, size);
+    // vectorPrintSize = size;
+    int vectorMinStart = 0;
+    int vectorMaxStart = size - vectorPrintSize;
+    auto *vectorMin = (float *) xcalloc(vectorPrintSize, sizeof(float));
+    auto *vectorMax = (float *) xcalloc(vectorPrintSize, sizeof(float));
+    if (data == NULL) {
+        printf("DATA is NULL!!!\n");
+    }
+    check_error(cudaMemcpy(vectorMin, data + vectorMinStart, vectorPrintSize * sizeof(float), cudaMemcpyDeviceToHost));
+    check_error(cudaMemcpy(vectorMax, data + vectorMaxStart, vectorPrintSize * sizeof(float), cudaMemcpyDeviceToHost));
+    for (int j = 0; j < vectorPrintSize; j++) {
+        printf("%f, ", vectorMin[j]);
+    }
+    printf("\n");
+    for (int j = 0; j < vectorPrintSize; j++) {
+        printf("%f, ", vectorMax[j]);
+    }
+    printf("\n");
+    delete vectorMax;
+    delete vectorMin;
+}
+
 #else // GPU
 #include "darknet.h"
 void cuda_set_device(int n) {}
