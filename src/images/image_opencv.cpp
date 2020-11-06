@@ -945,16 +945,16 @@ extern "C" void save_cv_jpg(mat_cv *img_src, const char *name)
 // ====================================================================
 extern "C" void draw_detections_cv_v3(mat_cv* mat, detection *dets, int num, float thresh, char **names, image **alphabet, int classes, int ext_output)
 {
-    draw_detections_cv_depth(mat, NULL, dets, num, thresh, names, alphabet, classes, ext_output);
+    draw_detections_cv_depth(mat, nullptr, dets, num, thresh, names, alphabet, classes, ext_output);
 }
 // ----------------------------------------
 
 extern "C" void draw_detections_cv_depth(mat_cv *mat, mat_cv *depth_mat, detection *dets, int num, float thresh,
                                          char **names, image **alphabet, int classes, int ext_output) {
-    int use_depth = (depth_mat != NULL);
+    int use_depth = (depth_mat != nullptr);
     try {
-        cv::Mat *show_img = (cv::Mat *) mat;
-        cv::Mat *show_depth = (cv::Mat *) depth_mat;
+        auto *show_img = (cv::Mat *) mat;
+        auto *show_depth = (cv::Mat *) depth_mat;
         int i, j;
         if (!show_img || !show_depth) return;
         static int frame_id = 0;
