@@ -38,7 +38,10 @@ route_layer make_route_layer(int batch, int n, int *input_layers, int *input_siz
     if (verbose) {
         fprintf(stderr, "route ");
         for (i = 0; i < n; ++i) {
-            fprintf(stderr, " %d", input_layers[i]);
+            if (i > 0) {
+                fprintf(stderr, ", ");
+            }
+            fprintf(stderr, "%4d", input_layers[i]);
         }
         /*
         fprintf(stderr, " inputs = %d \t outputs = %d, groups = %d, group_id = %d \n", l.inputs, l.outputs, l.groups,

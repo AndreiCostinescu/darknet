@@ -1109,14 +1109,20 @@ route_layer parse_route(list *options, size_params params, int verbose) {
     layer.c = layer.out_c;
 
     if (verbose) {
-        if (n > 3) fprintf(stderr, " \t    ");
-        else if (n > 1) fprintf(stderr, " \t            ");
-        else fprintf(stderr, " \t\t            ");
+        // layer nr (4) + space (1) + route_name (5) + space (1) +
+        // + routed_layers_length (4) * nr_routed_layers (n) + ", " (2) * (nr_routed_layers (n) - 1)
+        int outputLengthSoFar = 6 * n + 9;
+        for (i = outputLengthSoFar; i < 45; i++) {
+            fprintf(stderr, " ");
+        }
 
-        fprintf(stderr, "           ");
-        if (layer.groups > 1) fprintf(stderr, "%d/%d", layer.group_id, layer.groups);
-        else fprintf(stderr, "   ");
-        fprintf(stderr, " -> %4d x%4d x%4d \n", layer.out_w, layer.out_h, layer.out_c);
+        // must be preceeded by 45 characters
+        // length += 6
+        if (layer.groups > 1) fprintf(stderr, "%2d/%2d ", layer.group_id, layer.groups);
+        else fprintf(stderr, "      ");
+
+        // "->" must be preceeded by 51 characters
+        fprintf(stderr, "-> %4d x%4d x%4d \n", layer.out_w, layer.out_h, layer.out_c);
     }
     return layer;
 }
