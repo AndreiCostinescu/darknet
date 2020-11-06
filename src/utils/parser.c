@@ -1676,14 +1676,18 @@ network parse_network_cfg_custom_verbose(char *filename, int batch, int time_ste
             CHECK_CUDA(cudaMalloc((void **) net.output16_gpu, *net.max_output16_size * sizeof(short))); //sizeof(half)
         }
         if (workspace_size) {
-            fprintf(stderr, " Allocate additional workspace_size = %1.2f MB \n", (float) workspace_size / 1000000);
+            fprintf(stderr, "Allocate additional workspace_size = %1.2f MB (%d) \n", (float) workspace_size / 1000000,
+                    workspace_size);
+            net.workspace_size = workspace_size / sizeof(float) + 1;
             net.workspace = cuda_make_array(0, workspace_size / sizeof(float) + 1);
         } else {
+            net.workspace_size = workspace_size;
             net.workspace = (float *) xcalloc(1, workspace_size);
         }
     }
 #else
     if (workspace_size) {
+        net.workspace_size = workspace_size;
         net.workspace = (float*)xcalloc(1, workspace_size);
     }
 #endif

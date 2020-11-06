@@ -72,6 +72,7 @@ void forward_network_gpu(network net, network_state state) {
 
     //printf("\n");
     state.workspace = net.workspace;
+    state.workspace_size = net.workspace_size;
     int i, j;
     for (i = 0; i < net.n; ++i) {
         printf("At layer i = %d, ", i);

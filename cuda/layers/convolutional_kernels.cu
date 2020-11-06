@@ -558,14 +558,18 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
         }
         printf("\n");
 
-        // printData(state.input, l.batch * l.inputs, "State input in else branch");
-        // printData(state.workspace, l.workspace_size, "State workspace in else branch");
-        // printData(l.weights_gpu, l.nweights, "Layer weights in else branch");
-        // printData(l.output_gpu, l.batch * l.outputs, "Layer output before convolution");
-
-        CHECK_CUDNN(cudnnConvolutionForward(
+        printData(l.weights_gpu, l.nweights, "Layer weights in else branch");
+        printData(state.input, l.batch * l.inputs, "State input in else branch");
+        // printf("Layer workspace size = %d", l.workspace_size);
+        // printf("Network workspace size = %d", state.workspace_size);
+        printData(state.workspace, state.workspace_size, "State workspace in else branch");
+        // printf("Before convolving...\n");
+        auto _res = cudnnConvolutionForward(
                 cudnn_handle(), &alpha, l.srcTensorDesc, state.input, l.weightDesc, l.weights_gpu, l.convDesc,
-                l.fw_algo, state.workspace, l.workspace_size, &beta, l.dstTensorDesc, l.output_gpu));
+                l.fw_algo, state.workspace, l.workspace_size, &beta, l.dstTensorDesc, l.output_gpu);
+        // printf("After convolution!\n");
+        // printf("cudnnConvolutionForward result = %d\n", _res);
+        CHECK_CUDNN(_res);
 
         printData(l.output_gpu, l.batch * l.outputs, "Layer output after convolution");
 
@@ -578,7 +582,7 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
         //#endif    // CUDNN_HALF
     }
 
-    exit(0);
+    // exit(0);
 
 #else
     fill_ongpu(l.outputs*l.batch, 0, l.output_gpu, 1);

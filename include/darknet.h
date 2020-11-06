@@ -782,6 +782,7 @@ typedef struct network {
     float *truth;
     float *delta;
     float *workspace;
+    int workspace_size;  // not in bytes, in number of floats
     int train;
     int index;
     float *cost;
@@ -820,6 +821,7 @@ typedef struct network_state {
     float *input;
     float *delta;
     float *workspace;
+    int workspace_size;  // not in bytes, in number of floats
     int train;
     int index;
     network net;
