@@ -46,7 +46,8 @@ float *get_network_output_gpu(network net);
 
 typedef struct time_benchmark_layers {
     float time;
-    int layer_id, layer_type;
+    int layer_id;
+    LAYER_TYPE layer_type;
 } time_benchmark_layers;
 
 int time_comparator(const void *pa, const void *pb) {
@@ -58,11 +59,14 @@ int time_comparator(const void *pa, const void *pb) {
     return 0;
 }
 
-void forward_network_gpu(network net, network_state state) {
+void forward_network_gpu_verbose(network net, network_state state, int verbose) {
     static time_benchmark_layers *avg_time_per_layer = NULL;
     static time_benchmark_layers *sorted_avg_time_per_layer = NULL;
     double start_time, end_time;
-    if (net.benchmark_layers) {
+    int benchmark = net.benchmark_layers;
+    // benchmark = true;
+    // verbose = true;
+    if (benchmark) {
         if (!avg_time_per_layer) {
             avg_time_per_layer = (time_benchmark_layers *) calloc(net.n, sizeof(time_benchmark_layers));
             sorted_avg_time_per_layer = (time_benchmark_layers *) calloc(net.n, sizeof(time_benchmark_layers));
@@ -70,44 +74,49 @@ void forward_network_gpu(network net, network_state state) {
         cudaDeviceSynchronize();
     }
 
-    //printf("\n");
+    if (verbose) {
+        printf("\n");
+    }
     state.workspace = net.workspace;
     state.workspace_size = net.workspace_size;
     int i, j;
     for (i = 0; i < net.n; ++i) {
-        printf("At layer i = %d, ", i);
         state.index = i;
         layer l = net.layers[i];
-        printf("%s\n", get_layer_string(l.type));
         if (l.delta_gpu && state.train) {
             fill_ongpu(l.outputs * l.batch, 0, l.delta_gpu, 1);
         }
 
-        if (net.benchmark_layers) {
+        if (benchmark) {
             start_time = get_time_point();
         }
 
-        printf("Forwarding layer %s...\n", get_layer_string(l.type));
-        printf("Layer inputs: ");
-        int inputSize = min(20, l.batch * l.inputs);
-        auto *input = (float *) xcalloc(inputSize, sizeof(float));
-        cudaMemcpy(input, state.input, inputSize * sizeof(float), cudaMemcpyDeviceToHost);
-        for (j = 0; j < inputSize; j++) {
-            printf("%f, ", input[j]);
+        if (verbose) {
+            printf("At layer i = %d, %s\n", i, get_layer_string(l.type));
+            printf("Forwarding layer %s...\n", get_layer_string(l.type));
+            printf("Layer inputs: ");
+            int inputSize = min(20, l.batch * l.inputs);
+            auto *input = (float *) xcalloc(inputSize, sizeof(float));
+            cudaMemcpy(input, state.input, inputSize * sizeof(float), cudaMemcpyDeviceToHost);
+            for (j = 0; j < inputSize; j++) {
+                printf("%f, ", input[j]);
+            }
+            printf("\n");
         }
-        printf("\n");
         l.forward_gpu(l, state);
-        printf("Layer outputs: ");
-        int outputSize = min(20, l.batch * l.outputs);
-        auto *output = (float *) xcalloc(outputSize, sizeof(float));
-        cudaMemcpy(output, l.output_gpu, outputSize * sizeof(float), cudaMemcpyDeviceToHost);
-        for (j = 0; j < outputSize; j++) {
-            printf("%f, ", output[j]);
+        if (verbose) {
+            printf("Layer outputs: ");
+            int outputSize = min(20, l.batch * l.outputs);
+            auto *output = (float *) xcalloc(outputSize, sizeof(float));
+            cudaMemcpy(output, l.output_gpu, outputSize * sizeof(float), cudaMemcpyDeviceToHost);
+            for (j = 0; j < outputSize; j++) {
+                printf("%f, ", output[j]);
+            }
+            printf("\n");
+            printf("Forwarded layer %s!\n", get_layer_string(l.type));
         }
-        printf("\n");
-        printf("Forwarded layer %s!\n", get_layer_string(l.type));
 
-        if (net.benchmark_layers) {
+        if (benchmark) {
             CHECK_CUDA(cudaDeviceSynchronize());
             end_time = get_time_point();
             const double took_time = (end_time - start_time) / 1000;
@@ -119,7 +128,7 @@ void forward_network_gpu(network net, network_state state) {
             } else avg_time_per_layer[i].time = avg_time_per_layer[i].time * alpha + took_time * (1 - alpha);
 
             sorted_avg_time_per_layer[i] = avg_time_per_layer[i];
-            printf("\n fw-layer %d - type: %d - %lf ms - avg_time %lf ms \n", i, l.type, took_time,
+            printf("\n fw-layer %d - type: %s - %lf ms - avg_time %lf ms \n", i, get_layer_string(l.type), took_time,
                    avg_time_per_layer[i].time);
         }
 
@@ -157,18 +166,22 @@ void forward_network_gpu(network net, network_state state) {
 */
     }
 
-    if (net.benchmark_layers) {
+    if (benchmark) {
         printf("\n\nSorted by time (forward):\n");
         qsort(sorted_avg_time_per_layer, net.n, sizeof(time_benchmark_layers), time_comparator);
         for (i = 0; i < net.n; ++i) {
-            //printf("layer %d - type: %d - avg_time %lf ms \n", avg_time_per_layer[i].layer_id, avg_time_per_layer[i].layer_type, avg_time_per_layer[i].time);
-            printf("%d - fw-sort-layer %d - type: %d - avg_time %lf ms \n", i, sorted_avg_time_per_layer[i].layer_id,
+            printf("%d - fw-sort-layer %d - type: %s (%d) - avg_time %lf ms \n", i,
+                   sorted_avg_time_per_layer[i].layer_id, get_layer_string(sorted_avg_time_per_layer[i].layer_type),
                    sorted_avg_time_per_layer[i].layer_type, sorted_avg_time_per_layer[i].time);
         }
     }
 
     //cudaStreamSynchronize(get_cuda_stream());   // sync CUDA-functions
     //cudaDeviceSynchronize();
+}
+
+void forward_network_gpu(network net, network_state state) {
+    forward_network_gpu_verbose(net, state, 0);
 }
 
 void backward_network_gpu(network net, network_state state) {
@@ -382,9 +395,9 @@ float train_network_datum_gpu(network net, float *x, float *y) {
         float scale = (get_current_iteration(net) / ((float) net.max_batches));
         //scale = sin(scale * M_PI);
         net.learning_rate = net.adversarial_lr * scale;
-        layer l = net.layers[net.n - 1];
         int y_size = get_network_output_size(net) * net.batch;
-        if (net.layers[net.n - 1].truths) y_size = net.layers[net.n - 1].truths * net.batch;
+        layer l = net.layers[net.n - 1];
+        if (l.truths) y_size = l.truths * net.batch;
         float *truth_cpu = (float *) xcalloc(y_size, sizeof(float));
 
         const int img_size = net.w * net.h * net.c;

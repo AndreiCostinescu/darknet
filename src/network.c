@@ -195,6 +195,8 @@ char *get_layer_string(LAYER_TYPE a) {
             return "reorg";
         case AVGPOOL:
             return "avgpool";
+        case UPSAMPLE:
+            return "upsample";
         case SOFTMAX:
             return "softmax";
         case DETECTION:
