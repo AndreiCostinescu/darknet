@@ -498,10 +498,14 @@ void show_cuda_cudnn_info() {
     fprintf(stderr, " \n");
 }
 
+int minimum(int a, int b) {
+    return (a < b) ? a : b;
+}
+
 void printData(float *data, int size, const char *name) {
     printf("%s:\n", name);
     printf("Size = %d\n", size);
-    int vectorPrintSize = min(100, size);
+    int vectorPrintSize = minimum(100, size);
     // vectorPrintSize = size;
     int vectorMinStart = 0;
     int vectorMaxStart = size - vectorPrintSize;
