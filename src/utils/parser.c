@@ -465,10 +465,12 @@ layer parse_yolo(list *options, size_params params, int verbose) {
     else if (strcmp(iou_loss, "diou") == 0) l.iou_loss = DIOU;
     else if (strcmp(iou_loss, "ciou") == 0) l.iou_loss = CIOU;
     else l.iou_loss = IOU;
-    fprintf(stderr,
-            "[yolo] params: iou loss: %s (%d), iou_norm: %2.2f, obj_norm: %2.2f, cls_norm: %2.2f, delta_norm: %2.2f, scale_x_y: %2.2f\n",
-            iou_loss, l.iou_loss, l.iou_normalizer, l.obj_normalizer, l.cls_normalizer, l.delta_normalizer,
-            l.scale_x_y);
+    if (verbose) {
+        fprintf(stderr, "[yolo] params: iou loss: %s (%d), iou_norm: %2.2f, obj_norm: %2.2f, cls_norm: %2.2f, "
+                        "delta_norm: %2.2f, scale_x_y: %2.2f\n", iou_loss, l.iou_loss, l.iou_normalizer,
+                l.obj_normalizer, l.cls_normalizer, l.delta_normalizer,
+                l.scale_x_y);
+    }
 
     char *iou_thresh_kind_str = option_find_str_quiet(options, "iou_thresh_kind", "iou");
     if (strcmp(iou_thresh_kind_str, "iou") == 0) l.iou_thresh_kind = IOU;
@@ -487,7 +489,9 @@ layer parse_yolo(list *options, size_params params, int verbose) {
         if (strcmp(nms_kind, "greedynms") == 0) l.nms_kind = GREEDY_NMS;
         else if (strcmp(nms_kind, "diounms") == 0) l.nms_kind = DIOU_NMS;
         else l.nms_kind = DEFAULT_NMS;
-        printf("nms_kind: %s (%d), beta = %f \n", nms_kind, l.nms_kind, l.beta_nms);
+        if (verbose) {
+            fprintf(stderr,"nms_kind: %s (%d), beta = %f \n", nms_kind, l.nms_kind, l.beta_nms);
+        }
     }
 
     l.jitter = option_find_float(options, "jitter", .2);
