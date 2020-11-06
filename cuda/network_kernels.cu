@@ -65,7 +65,7 @@ void forward_network_gpu_verbose(network net, network_state state, int verbose) 
     double start_time, end_time, full_forward_time = 0.0;
     int benchmark = net.benchmark_layers;
     // benchmark = true;
-    // verbose = true;
+    verbose = true;
     if (benchmark) {
         if (!avg_time_per_layer) {
             avg_time_per_layer = (time_benchmark_layers *) calloc(net.n, sizeof(time_benchmark_layers));
@@ -79,9 +79,8 @@ void forward_network_gpu_verbose(network net, network_state state, int verbose) 
     }
     state.workspace = net.workspace;
     state.workspace_size = net.workspace_size;
-    int i, j;
+    int i;
     for (i = 0; i < net.n; ++i) {
-        // verbose = (i == 0);
         state.index = i;
         layer l = net.layers[i];
         if (l.delta_gpu && state.train) {
