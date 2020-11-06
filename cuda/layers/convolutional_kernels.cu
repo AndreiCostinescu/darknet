@@ -59,7 +59,7 @@ __global__ void binarize_weights_kernel(float *weights, int n, int size, float *
 }
 
 void binarize_weights_gpu(float *weights, int n, int size, float *binary) {
-    binarize_weights_kernel << < cuda_gridsize(n), BLOCK, 0, get_cuda_stream() >> >(weights, n, size, binary);
+    binarize_weights_kernel << < cuda_gridsize(n), BLOCK, 0, get_cuda_stream() >> > (weights, n, size, binary);
     CHECK_CUDA(cudaPeekAtLastError());
 }
 
@@ -73,9 +73,9 @@ __inline__ __device__
 float warpAllReduceSum(float val) {
     for (int mask = WARP_SIZE / 2; mask > 0; mask /= 2)
 #if CUDART_VERSION >= 9000
-            val += __shfl_xor_sync(0xffffffff, val, mask);
+        val += __shfl_xor_sync(0xffffffff, val, mask);
 #else
-    val += __shfl_xor(val, mask);
+            val += __shfl_xor(val, mask);
 #endif
     return val;
 }
@@ -152,7 +152,7 @@ half *cuda_make_f16_from_f32_array(float *src, size_t n) {
     return dst16;
 }
 
-void printData(float *data, int size, const char* name) {
+void printData(float *data, int size, const char *name) {
     printf("%s:\n", name);
     printf("Size = %d\n", size);
     int vectorPrintSize = min(100, size);
@@ -173,7 +173,7 @@ void printData(float *data, int size, const char* name) {
         printf("%f, ", vectorMin[j]);
     }
     printf("\n");
-    for (int j = vectorMaxSize; j < size; j++) {
+    for (int j = 0; j < vectorPrintSize; j++) {
         printf("%f, ", vectorMax[j]);
     }
     printf("\n");
@@ -182,7 +182,7 @@ void printData(float *data, int size, const char* name) {
 }
 
 void forward_convolutional_layer_gpu(convolutional_layer l, network_state state) {
-    //fill_ongpu(l.outputs*l.batch, 0, l.output_gpu, 1);
+    // fill_ongpu(l.outputs*l.batch, 0, l.output_gpu, 1);
     if (l.binary) {
         printf("Binary convolution!\n");
         binarize_weights_gpu(l.weights_gpu, l.n, (l.c / l.groups) * l.size * l.size, l.binary_weights_gpu);
@@ -446,16 +446,15 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
         state.input = l.binary_input_gpu;
     }
 
-    //fill_ongpu(l.outputs*l.batch, 0, l.output_gpu, 1);
+    // fill_ongpu(l.outputs*l.batch, 0, l.output_gpu, 1);
 
 #ifdef CUDNN
     //float one = 1;    // alpha[0], beta[0] is float for HALF and FLOAT
     float alpha = 1, beta = 0;
 
 //#ifdef CUDNN_HALF
-    //if (state.use_mixed_precision) {
-    int iteration_num = get_current_iteration(
-            state.net); // (*state.net.seen) / (state.net.batch*state.net.subdivisions);
+    // (*state.net.seen) / (state.net.batch*state.net.subdivisions);
+    int iteration_num = get_current_iteration(state.net);
     printf("CONVOLUTION FORWARD: iteration_num = %d\n", iteration_num);
     if (state.index != 0 && state.net.cudnn_half && !l.xnor &&
         (!state.train || (iteration_num > 3 * state.net.burn_in) && state.net.loss_scale != 1) &&
@@ -492,15 +491,15 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
         assert(input16_size > 0);
         cuda_convert_f32_to_f16(state.input, input16_size, input16);
 
-        //fill_ongpu(output16_size / 2, 0, (float *)output16, 1);
+        // fill_ongpu(output16_size / 2, 0, (float *)output16, 1);
         CHECK_CUDNN(cudnnConvolutionForward(
                 cudnn_handle(), &alpha, l.srcTensorDesc16, input16, l.weightDesc16, l.weights_gpu16, l.convDesc,
                 l.fw_algo16, state.workspace, l.workspace_size, &beta, l.dstTensorDesc16, output16));
 
 
         if (l.batch_normalize) {
-            if (state.train && !state.net.adversarial) // Training
-            {
+            if (state.train && !state.net.adversarial) {
+                // Training
                 simple_copy_ongpu(l.outputs * l.batch / 2, output16, l.x_gpu);
                 //copy_ongpu(l.outputs*l.batch / 2, output16, 1, l.x_gpu, 1);
                 //cudaMemcpyAsync(l.x_gpu, output16, l.outputs*l.batch*sizeof(half), cudaMemcpyDefault, get_cuda_stream());
@@ -528,16 +527,16 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
 
                 cuda_convert_f16_to_f32(output16, output16_size, l.output_gpu);
                 //forward_batchnorm_layer_gpu(l, state);
-            } else // Detection
-            {
+            } else {
+                // Detection
                 cuda_convert_f16_to_f32(output16, output16_size, l.output_gpu);
                 normalize_gpu(l.output_gpu, l.rolling_mean_gpu, l.rolling_variance_gpu, l.batch, l.out_c,
                               l.out_h * l.out_w);
                 scale_bias_gpu(l.output_gpu, l.scales_gpu, l.batch, l.out_c, l.out_h * l.out_w);
                 add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.out_c, l.out_w * l.out_h);
             }
-        } else // BIAS only
-        {
+        } else {
+            // BIAS only
             cuda_convert_f16_to_f32(output16, output16_size, l.output_gpu);
             add_bias_gpu(l.output_gpu, l.biases_gpu, l.batch, l.n, l.out_w * l.out_h);
         }
@@ -554,17 +553,6 @@ void forward_convolutional_layer_gpu(convolutional_layer l, network_state state)
         printf("\n is_nan_or_inf(l.weights_gpu) = %d \n", weights_nan_inf);
         if (weights_nan_inf) getchar();
         */
-
-
-        for (int i=0; i<l.nweights; i++) {
-            printf("%f, ", l.weights[i]);
-        }
-        printf("\n");
-        pull_convolutional_layer(l);
-        for (int i=0; i<l.nweights; i++) {
-            printf("%f, ", l.weights[i]);
-        }
-        printf("\n");
 
         printData(l.weights_gpu, l.nweights, "Layer weights in else branch");
         printData(state.input, l.batch * l.inputs, "State input in else branch");
@@ -943,59 +931,61 @@ void backward_convolutional_layer_gpu(convolutional_layer l, network_state state
     }
 
     int m = l.n / l.groups;
-    int n = l.size*l.size*l.c / l.groups;
-    int k = l.out_w*l.out_h;
+    int n = l.size * l.size * l.c / l.groups;
+    int k = l.out_w * l.out_h;
 
     int i, j;
-    for(i = 0; i < l.batch; ++i){
+    for (i = 0; i < l.batch; ++i) {
         for (j = 0; j < l.groups; ++j) {
-            float * a = l.delta_gpu + (i*l.groups + j)*m*k;
-            float * b = state.workspace;
-            float * c = l.weight_updates_gpu + j*l.nweights / l.groups;
+            float *a = l.delta_gpu + (i * l.groups + j) * m * k;
+            float *b = state.workspace;
+            float *c = l.weight_updates_gpu + j * l.nweights / l.groups;
 
-            float *im = state.input + (i*l.groups + j)*l.c / l.groups*l.h*l.w;
+            float *im = state.input + (i * l.groups + j) * l.c / l.groups * l.h * l.w;
 
             if (!state.net.adversarial && !l.train_only_bn) {
                 //im2col_ongpu(im, l.c / l.groups, l.h, l.w, l.size, l.stride, l.pad, state.workspace);
                 im2col_gpu_ext(im,          // input
-                    l.c / l.groups,         // input channels
-                    l.h, l.w,               // input size (h, w)
-                    l.size, l.size,         // kernel size (h, w)
-                    l.pad * l.dilation, l.pad * l.dilation,   // padding (h, w)
-                    l.stride_y, l.stride_x,     // stride (h, w)
-                    l.dilation, l.dilation, // dilation (h, w)
-                    state.workspace);       // output
+                               l.c / l.groups,         // input channels
+                               l.h, l.w,               // input size (h, w)
+                               l.size, l.size,         // kernel size (h, w)
+                               l.pad * l.dilation, l.pad * l.dilation,   // padding (h, w)
+                               l.stride_y, l.stride_x,     // stride (h, w)
+                               l.dilation, l.dilation, // dilation (h, w)
+                               state.workspace);       // output
                 //gemm_ongpu(0, 1, m, n, k, 1, a + i*m*k, k, b, k, 1, c, n);
                 gemm_ongpu(0, 1, m, n, k, 1, a, k, b, k, 1, c, n);
             }
 
             if (state.delta) {
                 if (l.binary || l.xnor) swap_binary(&l);
-                float * a = l.weights_gpu + j*l.nweights / l.groups;
-                float * b = l.delta_gpu + (i*l.groups + j)*m*k;
-                float * c = state.workspace;
+                float *a = l.weights_gpu + j * l.nweights / l.groups;
+                float *b = l.delta_gpu + (i * l.groups + j) * m * k;
+                float *c = state.workspace;
 
                 //gemm_ongpu(1, 0, n, k, m, 1, a, n, b + i*k*m, k, 0, c, k);
                 gemm_ongpu(1, 0, n, k, m, 1, a, n, b, k, 0, c, k);
 
 
-                float *delta = state.delta + (i*l.groups + j)*l.c / l.groups*l.h*l.w;
+                float *delta = state.delta + (i * l.groups + j) * l.c / l.groups * l.h * l.w;
 
                 //col2im_ongpu(state.workspace, l.c / l.groups, l.h, l.w, l.size, l.stride, l.pad, delta);
                 col2im_gpu_ext(
-                    state.workspace,        // input
-                    l.c / l.groups,         // input channels
-                    l.h, l.w,               // input size (h, w)
-                    l.size, l.size,         // kernel size (h, w)
-                    l.pad * l.dilation, l.pad * l.dilation,   // padding size (h, w)
-                    l.stride_y, l.stride_x,     // stride size (h, w)
-                    l.dilation, l.dilation, // dilation size (h, w)
-                    delta);                 // output (delta)
+                        state.workspace,        // input
+                        l.c / l.groups,         // input channels
+                        l.h, l.w,               // input size (h, w)
+                        l.size, l.size,         // kernel size (h, w)
+                        l.pad * l.dilation, l.pad * l.dilation,   // padding size (h, w)
+                        l.stride_y, l.stride_x,     // stride size (h, w)
+                        l.dilation, l.dilation, // dilation size (h, w)
+                        delta);                 // output (delta)
 
                 if (l.binary || l.xnor) {
                     swap_binary(&l);
                 }
-                if (l.xnor) gradient_array_ongpu(original_input + i*l.c*l.h*l.w, l.c*l.h*l.w, HARDTAN, state.delta + i*l.c*l.h*l.w);
+                if (l.xnor)
+                    gradient_array_ongpu(original_input + i * l.c * l.h * l.w, l.c * l.h * l.w, HARDTAN,
+                                         state.delta + i * l.c * l.h * l.w);
             }
         }
     }

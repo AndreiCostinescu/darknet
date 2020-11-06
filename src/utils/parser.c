@@ -1997,7 +1997,7 @@ int loadWeight(FILE *fp, float *weight, int size, const char *name, int layerInd
         printf("\n Warning: Unexpected end of weights-file! %s - l.index = %d; Missing %d bytes \n",
                name, layerIndex, size - readBytes);
     }
-    printWeights(weight, size, name);
+    // printWeights(weight, size, name);
     return size;
 }
 
@@ -2170,11 +2170,11 @@ void load_weights_upto(network *net, char *filename, int cutoff) {
         fread(&iseen, sizeof(uint32_t), 1, fp);
         *net->seen = iseen;
     }
-    *net->cur_iteration = get_current_batch(*net);
     printf(", trained: %.0f K-images (%.0f Kilo-batches_64) \n", (float) (*net->seen / 1000),
            (float) (*net->seen / 64000));
-    int transpose = (major > 1000) || (minor > 1000);
+    *net->cur_iteration = get_current_batch(*net);
     printf("CUR_ITERATION: %d\n", *net->cur_iteration);
+    int transpose = (major > 1000) || (minor > 1000);
     printf("TRANSPOSE: %d\n", transpose);
 
     int i;
