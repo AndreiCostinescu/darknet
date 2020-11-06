@@ -155,13 +155,21 @@ half *cuda_make_f16_from_f32_array(float *src, size_t n) {
 void printData(float *data, int size, const char* name) {
     printf("%s:\n", name);
     printf("Size = %d\n", size);
-    int vectorMinSize = min(20, size);
-    int vectorMaxSize = max(size - 20, 0);
-    auto *vectorMin = (float *) xcalloc(vectorMinSize, sizeof(float));
-    auto *vectorMax = (float *) xcalloc(vectorMaxSize, sizeof(float));
-    cudaMemcpy(vectorMin, data, vectorMinSize, cudaMemcpyDeviceToHost);
-    cudaMemcpy(vectorMax, data + vectorMaxSize, size - vectorMaxSize, cudaMemcpyDeviceToHost);
-    for (int j = 0; j < vectorMinSize; j++) {
+    int vectorPrintSize = min(100, size);
+    // vectorPrintSize = size;
+    int vectorMinStart = 0;
+    int vectorMaxStart = size - vectorPrintSize;
+    auto *vectorMin = (float *) xcalloc(vectorPrintSize, sizeof(float));
+    auto *vectorMax = (float *) xcalloc(vectorPrintSize, sizeof(float));
+    if (data == NULL) {
+        printf("DATA is NULL!!!\n");
+    }
+    printf("Before creating min vector... %d, %d, %d\n", vectorMin, data, data + vectorMinStart, vectorPrintSize);
+    check_error(cudaMemcpy(vectorMin, data + vectorMinStart, vectorPrintSize * sizeof(float), cudaMemcpyDeviceToHost));
+    printf("Before creating max vector... %d, %d, %d\n", vectorMax, data, data + vectorMaxStart, vectorPrintSize);
+    check_error(cudaMemcpy(vectorMax, data + vectorMaxStart, vectorPrintSize * sizeof(float), cudaMemcpyDeviceToHost));
+    // printf("Created both vectors!\n");
+    for (int j = 0; j < vectorPrintSize; j++) {
         printf("%f, ", vectorMin[j]);
     }
     printf("\n");

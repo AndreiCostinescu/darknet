@@ -91,7 +91,7 @@ void forward_network_gpu(network net, network_state state) {
         printf("Layer inputs: ");
         int inputSize = min(20, l.batch * l.inputs);
         auto *input = (float *) xcalloc(inputSize, sizeof(float));
-        cudaMemcpy(input, state.input, inputSize, cudaMemcpyDeviceToHost);
+        cudaMemcpy(input, state.input, inputSize * sizeof(float), cudaMemcpyDeviceToHost);
         for (j = 0; j < inputSize; j++) {
             printf("%f, ", input[j]);
         }
@@ -100,7 +100,7 @@ void forward_network_gpu(network net, network_state state) {
         printf("Layer outputs: ");
         int outputSize = min(20, l.batch * l.outputs);
         auto *output = (float *) xcalloc(outputSize, sizeof(float));
-        cudaMemcpy(output, l.output_gpu, outputSize, cudaMemcpyDeviceToHost);
+        cudaMemcpy(output, l.output_gpu, outputSize * sizeof(float), cudaMemcpyDeviceToHost);
         for (j = 0; j < outputSize; j++) {
             printf("%f, ", output[j]);
         }
