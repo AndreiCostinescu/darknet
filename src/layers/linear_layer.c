@@ -5,7 +5,7 @@
 #include "utils/blas.h"
 #include "assert.h"
 
-layer make_linear_layer(int batch, int h, int w, int c, int a, int b, int verbose) {
+layer make_linear_layer(int batch, int h, int w, int c, float a, float b, int verbose) {
     layer l = {(LAYER_TYPE) 0};
     l.type = LINEAR_LAYER;
 

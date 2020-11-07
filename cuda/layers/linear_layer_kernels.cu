@@ -10,7 +10,10 @@ extern "C" {
 
 extern "C" void forward_linear_layer_gpu(const layer l, network_state net) {
     int N = l.batch * l.inputs;
+    // printData(net.input, N, "LINEAR LAYER INPUTS");
+    // printf("alpha = %f, beta = %f\n", l.alpha, l.beta);
     axby_ongpu(N, l.alpha, l.beta, net.input, 1, l.output_gpu, 1);
+    // printData(l.output_gpu, N, "LINEAR LAYER OUTPUTS");
 }
 
 extern "C" void backward_linear_layer_gpu(layer l, network_state net) {

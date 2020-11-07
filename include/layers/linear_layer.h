@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-layer make_linear_layer(int batch, int h, int w, int c, int a, int b, int verbose);
+layer make_linear_layer(int batch, int h, int w, int c, float a, float b, int verbose);
 
 void forward_linear_layer(layer l, network_state net);
 
