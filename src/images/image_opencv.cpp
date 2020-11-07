@@ -833,23 +833,21 @@ extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, 
         printf("RealSense error calling %s (%s): %s\n", e.get_failed_function(), e.get_failed_args(), e.what());
         error("RealSense error!\n");
     } catch (...) {
-        error("Error!\n");
+        error("Error in get_image_from_realsense!\n");
     }
 
     image im;
     if (letterbox) {
-        *in_img = (mat_cv * )
-        new cv::Mat(src->rows, src->cols, CV_8UC(c));
+        *in_img = (mat_cv *) new cv::Mat(src->rows, src->cols, CV_8UC(c));
         cv::resize(*src, **(cv::Mat **) in_img, (*(cv::Mat **) in_img)->size(), 0, 0, cv::INTER_LINEAR);
-        *in_depth = (mat_cv * )
-        new cv::Mat(src->rows, src->cols, CV_8UC(c));
+        *in_depth = (mat_cv *) new cv::Mat(src->rows, src->cols, CV_8UC(c));
         cv::resize(depth, **(cv::Mat **) in_depth, (*(cv::Mat **) in_depth)->size(), 0, 0, cv::INTER_LINEAR);
 
         if (c > 1) cv::cvtColor(*src, *src, cv::COLOR_RGB2BGR);
         image tmp = mat_to_image(*src);
         im = letterbox_image(tmp, w, h);
         free_image(tmp);
-        release_mat((mat_cv * *) & src);
+        release_mat((mat_cv **) &src);
     } else {
         *(cv::Mat **) in_img = src;
         *(cv::Mat **) in_depth = new cv::Mat(depth);
@@ -912,10 +910,13 @@ extern "C" void draw_detections_cv_depth(mat_cv *mat, mat_cv *depth_mat, detecti
                                          char **names, image **alphabet, int classes, int ext_output) {
     int use_depth = (depth_mat != nullptr);
     try {
-        auto *show_img = (cv::Mat *) mat;
-        auto *show_depth = (cv::Mat *) depth_mat;
+        cv::Mat *show_img = (cv::Mat *) (*mat);
+        cv::Mat *show_depth = nullptr;
+        if (use_depth) {
+            show_depth = (cv::Mat *) (*depth_mat);
+        }
         int i, j;
-        if (!show_img || !show_depth) return;
+        if (!show_img) return;
         static int frame_id = 0;
         frame_id++;
 
@@ -981,9 +982,11 @@ extern "C" void draw_detections_cv_depth(mat_cv *mat, mat_cv *depth_mat, detecti
                 float depth = 0.0;
                 int box_x_center = (left + right) / 2;
                 int box_y_center = (top + bot) / 2;
-                int scaled_x_center = (int) (((float) box_x_center) / show_img->cols *  show_depth->cols);
-                int scaled_y_center = (int) (((float) box_y_center) / show_img->rows *  show_depth->rows);
+                int scaled_x_center = 0;
+                int scaled_y_center = 0;
                 if (use_depth) {
+                    scaled_x_center = (int) (((float) box_x_center) / show_img->cols * show_depth->cols);
+                    scaled_y_center = (int) (((float) box_y_center) / show_img->rows * show_depth->rows);
                     depth = show_depth->at<float>(scaled_y_center, scaled_x_center);
                     if (depth < 0.1 || depth > 10) {
                         depth = -1;
