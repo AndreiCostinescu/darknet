@@ -517,11 +517,11 @@ void printData(float *data, int size, const char *name) {
     check_error(cudaMemcpy(vectorMin, data + vectorMinStart, vectorPrintSize * sizeof(float), cudaMemcpyDeviceToHost));
     check_error(cudaMemcpy(vectorMax, data + vectorMaxStart, vectorPrintSize * sizeof(float), cudaMemcpyDeviceToHost));
     for (int j = 0; j < vectorPrintSize; j++) {
-        printf("%f, ", vectorMin[j]);
+        printf("%.10f, ", vectorMin[j]);
     }
     printf("\n");
     for (int j = 0; j < vectorPrintSize; j++) {
-        printf("%f, ", vectorMax[j]);
+        printf("%.10f, ", vectorMax[j]);
     }
     printf("\n");
     delete vectorMax;
