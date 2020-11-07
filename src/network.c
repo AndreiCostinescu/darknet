@@ -23,7 +23,9 @@
 #include "layers/dropout_layer.h"
 #include "layers/gaussian_yolo_layer.h"
 #include "layers/gru_layer.h"
+#include "layers/identity_layer.h"
 #include "layers/local_layer.h"
+#include "layers/linear_layer.h"
 #include "layers/maxpool_layer.h"
 #include "layers/normalization_layer.h"
 #include "layers/region_layer.h"
@@ -227,6 +229,8 @@ char *get_layer_string(LAYER_TYPE a) {
             return "batchnorm";
         case PRELU:
             return "prelu";
+        case LINEAR_LAYER:
+            return "linear";
         case IDENTITY:
             return "identity";
         default:
@@ -411,7 +415,6 @@ float train_network_waitkey(network net, data d, int wait_key) {
     free(y);
     return (float) sum / (n * batch);
 }
-
 
 float train_network_batch(network net, data d, int n) {
     int i, j;
@@ -863,9 +866,8 @@ void fill_network_boxes(network *net, int w, int h, float thresh, float hier, in
     }
 }
 
-void
-fill_network_boxes_batch(network *net, int w, int h, float thresh, float hier, int *map, int relative, detection *dets,
-                         int letter, int batch) {
+void fill_network_boxes_batch(network *net, int w, int h, float thresh, float hier, int *map, int relative,
+                              detection *dets, int letter, int batch) {
     int prev_classes = -1;
     int j;
     for (j = 0; j < net->n; ++j) {
@@ -891,8 +893,8 @@ fill_network_boxes_batch(network *net, int w, int h, float thresh, float hier, i
     }
 }
 
-detection *
-get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num, int letter) {
+detection *get_network_boxes(network *net, int w, int h, float thresh, float hier, int *map, int relative, int *num,
+                             int letter) {
     detection *dets = make_network_boxes(net, thresh, num);
     fill_network_boxes(net, w, h, thresh, hier, map, relative, dets, letter);
     return dets;
@@ -925,8 +927,8 @@ void free_batch_detections(det_num_pair *det_num_pairs, int n) {
 // ]
 //},
 
-char *
-detection_to_json(detection *dets, int nboxes, int classes, char **names, long long int frame_id, char *filename) {
+char *detection_to_json(detection *dets, int nboxes, int classes, char **names, long long int frame_id,
+                        char *filename) {
     const float thresh = 0.005; // function get_network_boxes() has already filtred dets by actual threshold
 
     char *send_buf = (char *) calloc(1024, sizeof(char));
@@ -988,9 +990,8 @@ float *network_predict_image(network *net, image im) {
     return p;
 }
 
-det_num_pair *
-network_predict_batch(network *net, image im, int batch_size, int w, int h, float thresh, float hier, int *map,
-                      int relative, int letter) {
+det_num_pair *network_predict_batch(network *net, image im, int batch_size, int w, int h, float thresh, float hier,
+                                    int *map, int relative, int letter) {
     network_predict(*net, im.data);
     det_num_pair *pdets = (struct det_num_pair *) calloc(batch_size, sizeof(det_num_pair));
     int num;

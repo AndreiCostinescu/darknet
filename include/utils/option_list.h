@@ -16,6 +16,7 @@ extern "C" {
 list *read_data_cfg(char *filename);
 int read_option(char *s, list *options);
 void option_insert(list *l, char *key, char *val);
+char *option_find_success(list *l, char *key, int *success);
 char *option_find(list *l, char *key);
 char *option_find_str(list *l, char *key, char *def);
 char *option_find_str_quiet(list *l, char *key, char *def);

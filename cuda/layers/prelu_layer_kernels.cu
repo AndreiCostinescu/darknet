@@ -61,7 +61,7 @@ extern "C" void prelu_gpu(float *input, float *output, float *alpha, int batch, 
 }
 
 extern "C" void forward_prelu_layer_gpu(const layer l, network_state net) {
-    fill_ongpu(l.outputs * l.batch, 0, l.output_gpu, 1);  // fill output_gpu with 0s
+    // fill_ongpu(l.outputs * l.batch, 0, l.output_gpu, 1);  // fill output_gpu with 0s
     prelu_gpu(net.input, l.output_gpu, l.weights_gpu, l.batch, l.c, l.groups, l.w * l.h);
 }
 #endif

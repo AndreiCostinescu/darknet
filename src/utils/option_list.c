@@ -87,6 +87,21 @@ void option_unused(list *l) {
     }
 }
 
+char *option_find_success(list *l, char *key, int *success) {
+    node *n = l->front;
+    while (n) {
+        kvp *p = (kvp *) n->val;
+        if (strcmp(p->key, key) == 0) {
+            p->used = 1;
+            *success = 1;
+            return p->val;
+        }
+        n = n->next;
+    }
+    *success = 0;
+    return 0;
+}
+
 char *option_find(list *l, char *key) {
     node *n = l->front;
     while (n) {

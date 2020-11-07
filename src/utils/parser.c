@@ -26,6 +26,7 @@
 #include "layers/dropout_layer.h"
 #include "layers/gru_layer.h"
 #include "layers/identity_layer.h"
+#include "layers/linear_layer.h"
 #include "layers/local_layer.h"
 #include "layers/lstm_layer.h"
 #include "layers/conv_lstm_layer.h"
@@ -53,7 +54,7 @@ typedef struct {
 list *read_cfg(char *filename);
 
 LAYER_TYPE string_to_layer_type(char *type) {
-
+    if (strcmp(type, "[linear]") == 0) return LINEAR_LAYER;
     if (strcmp(type, "[shortcut]") == 0) return SHORTCUT;
     if (strcmp(type, "[scale_channels]") == 0) return SCALE_CHANNELS;
     if (strcmp(type, "[sam]") == 0) return SAM;
@@ -490,7 +491,7 @@ layer parse_yolo(list *options, size_params params, int verbose) {
         else if (strcmp(nms_kind, "diounms") == 0) l.nms_kind = DIOU_NMS;
         else l.nms_kind = DEFAULT_NMS;
         if (verbose) {
-            fprintf(stderr,"nms_kind: %s (%d), beta = %f \n", nms_kind, l.nms_kind, l.beta_nms);
+            fprintf(stderr, "nms_kind: %s (%d), beta = %f \n", nms_kind, l.nms_kind, l.beta_nms);
         }
     }
 
@@ -1054,6 +1055,29 @@ layer parse_prelu(list *options, size_params params, int verbose) {
     return l;
 }
 
+layer parse_linear(list *options, size_params params, int verbose) {
+    float a, b, n, m;
+    int parameterFound;
+    char *parameterValue = option_find_success(options, "a", &parameterFound);
+    if (parameterFound) {
+        a = atof(parameterValue);
+    } else {
+        n = option_find_float(options, "n_a", 1.0);
+        m = option_find_float(options, "m_a", 1.0);
+        a = n / m;
+    }
+    parameterValue = option_find_success(options, "b", &parameterFound);
+    if (parameterFound) {
+        b = atof(parameterValue);
+    } else {
+        n = option_find_float(options, "n_b", 0.0);
+        m = option_find_float(options, "m_b", 1.0);
+        b = n / m;
+    }
+    layer l = make_linear_layer(params.batch, params.h, params.w, params.c, a, b, verbose);
+    return l;
+}
+
 layer parse_identity(list *options, size_params params, int verbose) {
     layer l = make_identity_layer(params.batch, params.h, params.w, params.c, verbose);
     return l;
@@ -1396,6 +1420,8 @@ network parse_network_cfg_custom_verbose(char *filename, int batch, int time_ste
             l = parse_activation(options, params, verbose);
         } else if (lt == PRELU) {
             l = parse_prelu(options, params, verbose);
+        } else if (lt == LINEAR_LAYER) {
+            l = parse_linear(options, params, verbose);
         } else if (lt == IDENTITY) {
             l = parse_identity(options, params, verbose);
         } else if (lt == RNN) {
