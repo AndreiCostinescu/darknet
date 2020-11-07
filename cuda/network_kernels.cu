@@ -65,7 +65,7 @@ void forward_network_gpu_verbose(network net, network_state state, int verbose) 
     double start_time, end_time, full_forward_time = 0.0;
     int benchmark = net.benchmark_layers;
     // benchmark = true;
-    verbose = true;
+    // verbose = true;
     if (benchmark) {
         if (!avg_time_per_layer) {
             avg_time_per_layer = (time_benchmark_layers *) calloc(net.n, sizeof(time_benchmark_layers));
@@ -94,7 +94,11 @@ void forward_network_gpu_verbose(network net, network_state state, int verbose) 
         if (verbose) {
             printf("At layer i = %d, %s\n", i, get_layer_string(l.type));
             printf("Forwarding layer %s...\n", get_layer_string(l.type));
-            printData(state.input, l.batch * l.inputs, "Layer inputs");
+            if (l.type != ROUTE) {
+                printData(state.input, l.batch * l.inputs, "Layer inputs");
+            } else {
+                printf("Route layer inputs are not relevant!\n");
+            }
         }
         l.forward_gpu(l, state);
         if (verbose) {
