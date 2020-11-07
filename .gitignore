@@ -25,6 +25,7 @@ submission/
 cfg/
 build/darknet/*
 build_*/
+build-*/
 !build/darknet/YoloWrapper.cs
 .fuse*
 *.weight

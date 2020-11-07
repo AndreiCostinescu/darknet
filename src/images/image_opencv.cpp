@@ -40,9 +40,11 @@
 #endif
 
 #ifdef REALSENSE
+
 #include <librealsense2/rs.hpp>
 #include <exception>
 #include "images/realsense-opencv-helpers.hpp"
+
 #endif
 
 //using namespace cv;
@@ -900,14 +902,14 @@ extern "C" void save_cv_jpg(mat_cv *img_src, const char *name) {
 // ====================================================================
 // Draw Detection
 // ====================================================================
-extern "C" void draw_detections_cv_v3(mat_cv *mat, detection *dets, int num, float thresh,
-                                      char **names, image **alphabet, int classes, int ext_output) {
-    draw_detections_cv_depth(mat, nullptr, dets, num, thresh, names, alphabet, classes, ext_output);
+extern "C" void draw_detections_cv_v3(mat_cv *mat, detection *detections, int num, float thresh,
+                                      char **names, image **alphabet, int classes, int printDetections) {
+    draw_detections_cv_depth(mat, nullptr, detections, num, thresh, names, alphabet, classes, printDetections);
 }
 // ----------------------------------------
 
-extern "C" void draw_detections_cv_depth(mat_cv *mat, mat_cv *depth_mat, detection *dets, int num, float thresh,
-                                         char **names, image **alphabet, int classes, int ext_output) {
+extern "C" void draw_detections_cv_depth(mat_cv *mat, mat_cv *depth_mat, detection *detections, int num, float thresh,
+                                         char **names, image **alphabet, int classes, int printDetections) {
     int use_depth = (depth_mat != nullptr);
     try {
         cv::Mat *show_img = (cv::Mat *) (*mat);
@@ -921,29 +923,31 @@ extern "C" void draw_detections_cv_depth(mat_cv *mat, mat_cv *depth_mat, detecti
         frame_id++;
 
         for (i = 0; i < num; ++i) {
-            char labelstr[4096] = {0};
+            char labelString[4096] = {0};
             int class_id = -1;
             for (j = 0; j < classes; ++j) {
                 int show = strncmp(names[j], "dont_show", 9);
-                if (dets[i].prob[j] > thresh && show) {
+                if (detections[i].prob[j] > thresh && show) {
                     if (class_id < 0) {
-                        strcat(labelstr, names[j]);
+                        strcat(labelString, names[j]);
                         class_id = j;
                         char buff[20];
-                        if (dets[i].track_id) {
-                            sprintf(buff, " (id: %d)", dets[i].track_id);
-                            strcat(labelstr, buff);
+                        if (detections[i].track_id) {
+                            sprintf(buff, " (id: %d)", detections[i].track_id);
+                            strcat(labelString, buff);
                         }
-                        sprintf(buff, " (%2.0f%%)", dets[i].prob[j] * 100);
-                        strcat(labelstr, buff);
-                        printf("%s: %.0f%% ", names[j], dets[i].prob[j] * 100);
-                        if (dets[i].track_id) {
-                            printf("(track = %d, sim = %f) ", dets[i].track_id, dets[i].sim);
+                        sprintf(buff, " (%2.0f%%)", detections[i].prob[j] * 100);
+                        strcat(labelString, buff);
+                        if (printDetections) {
+                            printf("%s: %.0f%% ", names[j], detections[i].prob[j] * 100);
+                            if (detections[i].track_id) {
+                                printf("(track = %d, sim = %f) ", detections[i].track_id, detections[i].sim);
+                            }
                         }
                     } else {
-                        strcat(labelstr, ", ");
-                        strcat(labelstr, names[j]);
-                        printf(", %s: %.0f%% ", names[j], dets[i].prob[j] * 100);
+                        strcat(labelString, ", ");
+                        strcat(labelString, names[j]);
+                        printf(", %s: %.0f%% ", names[j], detections[i].prob[j] * 100);
                     }
                 }
             }
@@ -959,7 +963,7 @@ extern "C" void draw_detections_cv_depth(mat_cv *mat, mat_cv *depth_mat, detecti
                 rgb[0] = red;
                 rgb[1] = green;
                 rgb[2] = blue;
-                box b = dets[i].bbox;
+                box b = detections[i].bbox;
                 if (std::isnan(b.w) || std::isinf(b.w)) b.w = 0.5;
                 if (std::isnan(b.h) || std::isinf(b.h)) b.h = 0.5;
                 if (std::isnan(b.x) || std::isinf(b.x)) b.x = 0.5;
@@ -993,11 +997,12 @@ extern "C" void draw_detections_cv_depth(mat_cv *mat, mat_cv *depth_mat, detecti
                     }
                     char buff[40];
                     sprintf(buff, "; depth = %.2fm", depth);
-                    strcat(labelstr, buff);
+                    strcat(labelString, buff);
                 }
 
                 float const font_size = show_img->rows / 1000.F;
-                cv::Size const text_size = cv::getTextSize(labelstr, cv::FONT_HERSHEY_COMPLEX_SMALL, font_size, 1, 0);
+                cv::Size const text_size = cv::getTextSize(labelString, cv::FONT_HERSHEY_COMPLEX_SMALL, font_size, 1,
+                                                           0);
                 cv::Point pt1, pt2, pt_text, pt_text_bg1, pt_text_bg2;
                 pt1.x = left;
                 pt1.y = top;
@@ -1016,30 +1021,26 @@ extern "C" void draw_detections_cv_depth(mat_cv *mat, mat_cv *depth_mat, detecti
                 color.val[2] = blue * 256;
 
                 cv::rectangle(*show_img, pt1, pt2, color, width, 8, 0);
-                if (ext_output) {
+                if (printDetections) {
                     if (use_depth) {
                         printf("\t(left_x: %4.0f   top_y: %4.0f   width: %4.0f   height: %4.0f    depth: %.2f)\n",
                                (float) left, (float) top, b.w * show_img->cols, b.h * show_img->rows, depth);
+                        printf("Located at depth = %.2f & center (%d, %d) -> (%d, %d)\n", depth,
+                               box_x_center, box_y_center, scaled_x_center, scaled_y_center);
                     } else {
                         printf("\t(left_x: %4.0f   top_y: %4.0f   width: %4.0f   height: %4.0f)\n",
                                (float) left, (float) top, b.w * show_img->cols, b.h * show_img->rows);
-                    }
-                } else {
-                    printf("\n");
-                    if (use_depth) {
-                        printf("Located at depth = %.2f & center (%d, %d) -> (%d, %d)\n", depth,
-                               box_x_center, box_y_center, scaled_x_center, scaled_y_center);
                     }
                 }
 
                 cv::rectangle(*show_img, pt_text_bg1, pt_text_bg2, color, width, 8, 0);
                 cv::rectangle(*show_img, pt_text_bg1, pt_text_bg2, color, CV_FILLED, 8, 0);    // filled
                 cv::Scalar black_color = CV_RGB(0, 0, 0);
-                cv::putText(*show_img, labelstr, pt_text, cv::FONT_HERSHEY_COMPLEX_SMALL, font_size, black_color,
+                cv::putText(*show_img, labelString, pt_text, cv::FONT_HERSHEY_COMPLEX_SMALL, font_size, black_color,
                             2 * font_size, CV_AA);
             }
         }
-        if (ext_output) {
+        if (printDetections) {
             fflush(stdout);
         }
     }
