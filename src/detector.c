@@ -1659,13 +1659,13 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
         printf("%s: Predicted in %lf milli-seconds.\n", input, ((double) get_time_point() - time) / 1000);
         //printf("%s: Predicted in %f seconds.\n", input, (what_time_is_it_now()-time));
 
-        int nboxes = 0;
-        detection *dets = get_network_boxes(&net, im.w, im.h, thresh, hier_thresh, 0, 1, &nboxes, letter_box);
+        int nrBoxes = 0;
+        detection *dets = get_network_boxes(&net, im.w, im.h, thresh, hier_thresh, 0, 1, &nrBoxes, letter_box);
         if (nms) {
-            if (l.nms_kind == DEFAULT_NMS) do_nms_sort(dets, nboxes, l.classes, nms);
-            else diounms_sort(dets, nboxes, l.classes, nms, l.nms_kind, l.beta_nms);
+            if (l.nms_kind == DEFAULT_NMS) do_nms_sort(dets, nrBoxes, l.classes, nms);
+            else diounms_sort(dets, nrBoxes, l.classes, nms, l.nms_kind, l.beta_nms);
         }
-        draw_detections_v3(im, dets, nboxes, thresh, names, alphabet, l.classes, ext_output);
+        draw_detections_v3(im, dets, nrBoxes, thresh, names, alphabet, l.classes, ext_output);
         save_image(im, "predictions");
         if (!dont_show) {
             show_image(im, "predictions");
@@ -1677,7 +1677,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
                 fwrite(tmp, sizeof(char), strlen(tmp), json_file);
             }
             ++json_image_id;
-            json_buf = detection_to_json(dets, nboxes, l.classes, names, json_image_id, input);
+            json_buf = detection_to_json(dets, nrBoxes, l.classes, names, json_image_id, input);
 
             fwrite(json_buf, sizeof(char), strlen(json_buf), json_file);
             free(json_buf);
@@ -1690,7 +1690,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
 
             FILE *fw = fopen(labelpath, "wb");
             int i;
-            for (i = 0; i < nboxes; ++i) {
+            for (i = 0; i < nrBoxes; ++i) {
                 char buff[1024];
                 int class_id = -1;
                 float prob = 0;
@@ -1709,7 +1709,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
             fclose(fw);
         }
 
-        free_detections(dets, nboxes);
+        free_detections(dets, nrBoxes);
         free_image(im);
         free_image(sized);
 
