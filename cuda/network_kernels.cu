@@ -685,7 +685,6 @@ float *network_predict_gpu(network net, float *input) {
     if (net.gpu_index != cuda_get_device())
         cuda_set_device(net.gpu_index);
     int size = get_network_input_size(net) * net.batch;
-    printf("Network size: %d\n", size);
     network_state state;
     state.index = 0;
     state.net = net;
@@ -696,9 +695,9 @@ float *network_predict_gpu(network net, float *input) {
     state.truth = 0;
     state.train = 0;
     state.delta = 0;
-    printf("Forwarding gpu...\n");
+    // printf("Forwarding gpu...\n");
     forward_network_gpu(net, state);
-    printf("Forwarded gpu!\n");
+    // printf("Forwarded gpu!\n");
     float *out = get_network_output_gpu(net);
     //cuda_free(state.input);   // will be freed in the free_network()
     return out;

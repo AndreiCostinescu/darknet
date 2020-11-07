@@ -696,7 +696,6 @@ float *network_predict(network net, float *input) {
 
 float *network_predict_verbose(network net, float *input, int verbose) {
 #ifdef GPU
-    printf("Running GPU network!\n");
     if (verbose) {
         printf("Running GPU network!\n");
     }
