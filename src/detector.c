@@ -1920,6 +1920,7 @@ void draw_object(char *datacfg, char *cfgfile, char *weightfile, char *filename,
 
 void run_detector(int argc, char **argv) {
     int use_realsense = find_arg(argc, argv, "-use_realsense");
+    use_realsense += find_arg(argc, argv, "--use_realsense");
     int dont_show = find_arg(argc, argv, "-dont_show");
     int benchmark = find_arg(argc, argv, "-benchmark");
     int benchmark_layers = find_arg(argc, argv, "-benchmark_layers");
