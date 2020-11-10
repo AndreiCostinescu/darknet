@@ -10,8 +10,10 @@
 #include "darknet.h"
 
 #ifdef WIN32
+
 #include <time.h>
 #include "utils/gettimeofday.h"
+
 #else
 
 #include <sys/time.h>
@@ -42,11 +44,11 @@ static int demo_json_port = -1;
 
 static int avg_frames;
 static int demo_index = 0;
-static mat_cv **cv_images, **cv_depth_images;
+static mat_cv **cv_images;
+static void **cv_depth_images;
 
-mat_cv *in_img, *in_depth;
-mat_cv *det_img, *det_depth;
-mat_cv *show_img, *show_depth;
+mat_cv *in_img, *det_img, *show_img;
+void *in_depth, *det_depth, *show_depth;
 
 static volatile int flag_exit;
 static int letter_box = 0;
@@ -203,7 +205,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
 
     cv_images = (mat_cv **) xcalloc(avg_frames, sizeof(mat_cv));
     if (input_realsense) {
-        cv_depth_images = (mat_cv **) xcalloc(avg_frames, sizeof(mat_cv));
+        cv_depth_images = (void **) xcalloc(avg_frames, sizeof(void *));
     }
 
     int i;
@@ -305,11 +307,12 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
             detection *local_dets = dets;
             this_thread_yield();
 
-            if (!benchmark)
-                custom_atomic_store_int(&run_fetch_in_thread,
-                                        1); // if (custom_create_thread(&fetch_thread, 0, fetch_in_thread, 0)) error("Thread creation failed");
-            custom_atomic_store_int(&run_detect_in_thread,
-                                    1); // if (custom_create_thread(&detect_thread, 0, detect_in_thread, 0)) error("Thread creation failed");
+            if (!benchmark) {
+                custom_atomic_store_int(&run_fetch_in_thread, 1);
+                // if (custom_create_thread(&fetch_thread, 0, fetch_in_thread, 0)) error("Thread creation failed");
+            }
+            custom_atomic_store_int(&run_detect_in_thread, 1);
+            // if (custom_create_thread(&detect_thread, 0, detect_in_thread, 0)) error("Thread creation failed");
 
             //if (nms) do_nms_obj(local_dets, local_nboxes, l.classes, nms);    // bad results
             if (nms) {
@@ -343,13 +346,19 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
             }
 
             if (!benchmark && !dontdraw_bbox) {
+                printf("Before drawing...\n");
                 if (input_realsense) {
-                    draw_detections_cv_depth(show_img, show_depth, local_dets, local_nboxes, demo_thresh, demo_names,
+                    printf("Before showing depth realsense...\n");
+                    draw_detections_cv_depth(&show_img, &show_depth, local_dets, local_nboxes, demo_thresh, demo_names,
                                              demo_alphabet, demo_classes, demo_ext_output);
+                    printf("After showing depth realsense!\n");
                 } else {
-                    draw_detections_cv_v3(show_img, local_dets, local_nboxes, demo_thresh, demo_names, demo_alphabet,
+                    printf("Before showing depth v3...\n");
+                    draw_detections_cv_v3(&show_img, local_dets, local_nboxes, demo_thresh, demo_names, demo_alphabet,
                                           demo_classes, demo_ext_output);
+                    printf("After showing depth v3!\n");
                 }
+                printf("After drawing!\n");
             }
             free_detections(local_dets, local_nboxes);
 
@@ -414,7 +423,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
                 if (!benchmark) {
                     release_mat(&show_img);
                     if (input_realsense) {
-                        release_mat(&show_depth);
+                        free(show_depth);
                     }
                 }
                 show_img = det_img;
@@ -472,7 +481,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
     free(cv_images);
     if (input_realsense) {
         for (j = 0; j < avg_frames; ++j) {
-            release_mat(&cv_depth_images[j]);
+            free(cv_depth_images[j]);
         }
         free(cv_depth_images);
     }

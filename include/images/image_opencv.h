@@ -85,7 +85,7 @@ image get_image_from_stream_cpp(cap_cv *cap);
 image get_image_from_stream_resize(cap_cv *cap, int w, int h, int c, mat_cv **in_img, int dont_close);
 image get_image_from_stream_letterbox(cap_cv *cap, int w, int h, int c, mat_cv **in_img, int dont_close);
 #ifdef REALSENSE
-image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, mat_cv **in_depth, int dont_close, int letterbox);
+image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, void **in_depth, int dont_close, int letterbox);
 #endif
 
 
@@ -94,9 +94,9 @@ void save_cv_png(mat_cv *img, const char *name);
 void save_cv_jpg(mat_cv *img, const char *name);
 
 // Draw Detection
-void draw_detections_cv_v3(mat_cv *show_img, detection *detections, int num, float thresh, char **names,
+void draw_detections_cv_v3(mat_cv **show_img, detection *detections, int num, float thresh, char **names,
                            image **alphabet, int classes, int printDetections);
-void draw_detections_cv_depth(mat_cv *show_img, mat_cv *show_depth, detection *detections, int num, float thresh,
+void draw_detections_cv_depth(mat_cv **show_img, void **show_depth, detection *detections, int num, float thresh,
                               char **names, image **alphabet, int classes, int printDetections);
 
 // Draw Loss & Accuracy chart
