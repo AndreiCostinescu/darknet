@@ -825,24 +825,19 @@ extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, 
         printf("Started Realsense pipeline!\n");
     }
     // rs2::depth_frame *depth;
-    try {
-        printf("In try block...\n");
-        rs2::frameset currentFrame = pipe.wait_for_frames();
-        printf("Waited for frames...\n");
+    try{
+        rs2::frameset currentFrame;
+        currentFrame = pipe.wait_for_frames();
         currentFrame = alignTo.process(currentFrame);  // Make sure the frames are spatially aligned
-        printf("Aligned frames...\n");
 
-        printf("Before allocating memory for rs2::depth_frame...\n");
         *in_depth = (void *) new rs2::depth_frame(currentFrame.get_depth_frame());
-        printf("Before allocating memory for cv::Mat...\n");
         src = new cv::Mat(frame_to_mat(currentFrame.get_color_frame()));
-        printf("Allocating done!\n");
     } catch (const rs2::error &e) {
         printf("RealSense error calling %s (%s): %s\n", e.get_failed_function(), e.get_failed_args(), e.what());
         error("RealSense error!\n");
     } catch (std::exception &e) {
         char errorBuffer[512];
-        strcat(errorBuffer, "Error in get_image_from_realsense!\n");
+        strcat(errorBuffer, "Error in get_image_from_realsense while processing!\n");
         strcat(errorBuffer, e.what());
         error(errorBuffer);
     }
@@ -870,6 +865,17 @@ extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, 
     }
 
     return im;
+}
+// ----------------------------------------
+
+extern "C" void release_depth_frame(void **depth_frame) {
+    try {
+        rs2::depth_frame *rs2_depth_frame = (rs2::depth_frame *) (*depth_frame);
+        delete rs2_depth_frame;
+        depth_frame = nullptr;
+    } catch (...) {
+        cerr << " OpenCV/Realsense exception: depth_frame " << depth_frame << " can't be released! \n";
+    }
 }
 // ----------------------------------------
 #endif
@@ -935,16 +941,13 @@ extern "C" void draw_detections_cv_depth(mat_cv **mat, void **depth_mat, detecti
                                          char **names, image **alphabet, int classes, int printDetections) {
     int use_depth = (depth_mat != nullptr);
     try {
-        printf("Before show_img conversion...\n");
         if (mat == nullptr) {
             return;
         }
         cv::Mat *show_img = (cv::Mat *) (*mat);
-        printf("After show_img conversion!\n");
         int i, j;
         if (!show_img) return;
-        printf("No return :)\n");
-        printf("Show Img size (%d x %d)\n", show_img->rows, show_img->cols);
+        // printf("Show Img size (%d x %d)\n", show_img->rows, show_img->cols);
         static int frame_id = 0;
         frame_id++;
 

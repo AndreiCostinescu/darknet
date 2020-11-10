@@ -346,19 +346,13 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
             }
 
             if (!benchmark && !dontdraw_bbox) {
-                printf("Before drawing...\n");
                 if (input_realsense) {
-                    printf("Before showing depth realsense...\n");
                     draw_detections_cv_depth(&show_img, &show_depth, local_dets, local_nboxes, demo_thresh, demo_names,
                                              demo_alphabet, demo_classes, demo_ext_output);
-                    printf("After showing depth realsense!\n");
                 } else {
-                    printf("Before showing depth v3...\n");
                     draw_detections_cv_v3(&show_img, local_dets, local_nboxes, demo_thresh, demo_names, demo_alphabet,
                                           demo_classes, demo_ext_output);
-                    printf("After showing depth v3!\n");
                 }
-                printf("After drawing!\n");
             }
             free_detections(local_dets, local_nboxes);
 
@@ -423,7 +417,11 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
                 if (!benchmark) {
                     release_mat(&show_img);
                     if (input_realsense) {
-                        free(show_depth);
+#ifdef REALSENSE
+                        release_depth_frame(&show_depth);
+#else
+                        release_mat(&show_depth);
+#endif
                     }
                 }
                 show_img = det_img;
