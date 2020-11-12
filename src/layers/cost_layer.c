@@ -1,7 +1,7 @@
-#include "layers/cost_layer.h"
-#include "dark_cuda.h"
-#include "utils/blas.h"
-#include "utils/utils.h"
+#include <darknet/layers/cost_layer.h>
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/utils.h>
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>

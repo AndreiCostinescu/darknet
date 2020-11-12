@@ -1,14 +1,14 @@
 #include "assert.h"
-#include "network.h"
-#include "utils/utils.h"
-#include "utils/parser.h"
-#include "utils/option_list.h"
-#include "utils/blas.h"
-#include "applications/classifier.h"
-#include "dark_cuda.h"
+#include <darknet/network.h>
+#include <darknet/utils/utils.h>
+#include <darknet/utils/parser.h>
+#include <darknet/utils/option_list.h>
+#include <darknet/utils/blas.h>
+#include <darknet/applications/classifier.h>
+#include <darknet/dark_cuda.h>
 #ifdef WIN32
 #include <time.h>
-#include "utils/gettimeofday.h"
+#include <darknet/utils/gettimeofday.h"
 #else
 #include <sys/time.h>
 #endif

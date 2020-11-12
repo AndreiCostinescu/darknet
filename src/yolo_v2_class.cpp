@@ -1,18 +1,16 @@
-#include "darknet.h"
-#include "yolo_v2_class.hpp"
+#include <darknet/darknet.h>
+#include <darknet/yolo_v2_class.hpp>
 
-#include "network.h"
+#include <darknet/network.h>
 
 extern "C" {
-#include "layers/box.h"
-#include "layers/cost_layer.h"
-#include "layers/detection_layer.h"
-#include "layers/region_layer.h"
-#include "images/image.h"
-#include "utils/option_list.h"
-#include "utils/parser.h"
-#include "utils/utils.h"
-#include "demo.h"
+#include <darknet/layers/cost_layer.h>
+#include <darknet/layers/detection_layer.h>
+#include <darknet/layers/region_layer.h>
+#include <darknet/utils/option_list.h>
+#include <darknet/utils/parser.h>
+#include <darknet/utils/utils.h>
+#include <darknet/applications/demo.h>
 #include "stb_image.h"
 }
 //#include <sys/time.h>

@@ -1,6 +1,6 @@
-#include "layers/batchnorm_layer.h"
-#include "utils/blas.h"
-#include "utils/utils.h"
+#include <darknet/layers/batchnorm_layer.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/utils.h>
 #include <stdio.h>
 
 layer make_batchnorm_layer(int batch, int w, int h, int c, int train, int verbose) {

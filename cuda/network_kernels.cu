@@ -1,42 +1,42 @@
-#include "dark_cuda.h"
+#include <darknet/dark_cuda.h>
 
 #include <cstdio>
 #include <ctime>
 #include <cassert>
 
-#include "network.h"
-#include "images/image.h"
-#include "utils/blas.h"
-#include "utils/data.h"
-#include "utils/parser.h"
+#include <darknet/network.h>
+#include <darknet/images/image.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/data.h>
+#include <darknet/utils/parser.h>
 
-#include "utils/utils.h"
-#include "layers/crop_layer.h"
-#include "layers/connected_layer.h"
-#include "layers/rnn_layer.h"
-#include "layers/gru_layer.h"
-#include "layers/crnn_layer.h"
-#include "layers/detection_layer.h"
-#include "layers/region_layer.h"
-#include "layers/convolutional_layer.h"
-#include "layers/activation_layer.h"
-#include "layers/maxpool_layer.h"
-#include "layers/reorg_layer.h"
-#include "layers/avgpool_layer.h"
-#include "layers/normalization_layer.h"
-#include "layers/batchnorm_layer.h"
-#include "layers/cost_layer.h"
-#include "layers/local_layer.h"
-#include "layers/softmax_layer.h"
-#include "layers/dropout_layer.h"
-#include "layers/route_layer.h"
-#include "layers/shortcut_layer.h"
+#include <darknet/utils/utils.h>
+#include <darknet/layers/crop_layer.h>
+#include <darknet/layers/connected_layer.h>
+#include <darknet/layers/rnn_layer.h>
+#include <darknet/layers/gru_layer.h>
+#include <darknet/layers/crnn_layer.h>
+#include <darknet/layers/detection_layer.h>
+#include <darknet/layers/region_layer.h>
+#include <darknet/layers/convolutional_layer.h>
+#include <darknet/layers/activation_layer.h>
+#include <darknet/layers/maxpool_layer.h>
+#include <darknet/layers/reorg_layer.h>
+#include <darknet/layers/avgpool_layer.h>
+#include <darknet/layers/normalization_layer.h>
+#include <darknet/layers/batchnorm_layer.h>
+#include <darknet/layers/cost_layer.h>
+#include <darknet/layers/local_layer.h>
+#include <darknet/layers/softmax_layer.h>
+#include <darknet/layers/dropout_layer.h>
+#include <darknet/layers/route_layer.h>
+#include <darknet/layers/shortcut_layer.h>
 
 //#ifdef OPENCV
 //#include <opencv2/highgui/highgui_c.h>
 //#endif
 
-#include "images/http_stream.h"
+#include <darknet/images/http_stream.h>
 
 float *get_network_output_gpu_layer(network net, int i);
 

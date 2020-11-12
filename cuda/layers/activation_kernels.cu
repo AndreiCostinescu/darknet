@@ -1,11 +1,11 @@
-#include "darknet.h"
+#include <darknet/darknet.h>
 #include <cuda_runtime.h>
 #include <curand.h>
 #include <cublas_v2.h>
 #include <float.h>
 
-#include "layers/activations.h"
-#include "dark_cuda.h"
+#include <darknet/layers/activations.h>
+#include <darknet/dark_cuda.h>
 
 __device__ float lhtan_activate_kernel(float x) {
     if (x < 0) return .001 * x;

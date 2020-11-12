@@ -2,8 +2,8 @@
 #include <curand.h>
 #include <cublas_v2.h>
 
-#include "layers/avgpool_layer.h"
-#include "dark_cuda.h"
+#include <darknet/layers/avgpool_layer.h>
+#include <darknet/dark_cuda.h>
 
 __global__ void forward_avgpool_layer_kernel(int n, int w, int h, int c, float *input, float *output) {
     int id = (blockIdx.x + blockIdx.y * gridDim.x) * blockDim.x + threadIdx.x;

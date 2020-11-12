@@ -1,8 +1,8 @@
-#include "layers/softmax_layer.h"
-#include "dark_cuda.h"
-#include "utils/blas.h"
-#include "utils/utils.h"
-#include "utils/blas.h"
+#include <darknet/layers/softmax_layer.h>
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/utils.h>
+#include <darknet/utils/blas.h>
 
 #include <float.h>
 #include <math.h>

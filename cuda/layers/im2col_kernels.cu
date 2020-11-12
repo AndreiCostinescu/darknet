@@ -3,8 +3,8 @@
 #include <cublas_v2.h>
 #include <stdint.h>
 
-#include "layers/im2col.h"
-#include "dark_cuda.h"
+#include <darknet/layers/im2col.h>
+#include <darknet/dark_cuda.h>
 
 #include <stdio.h>
 #include <assert.h>

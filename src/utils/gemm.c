@@ -1,7 +1,7 @@
-#include "utils/gemm.h"
-#include "utils/utils.h"
-#include "layers/im2col.h"
-#include "dark_cuda.h"
+#include <darknet/utils/gemm.h>
+#include <darknet/utils/utils.h>
+#include <darknet/layers/im2col.h>
+#include <darknet/dark_cuda.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>

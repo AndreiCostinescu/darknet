@@ -1,5 +1,5 @@
-#include "utils/matrix.h"
-#include "utils/utils.h"
+#include <darknet/utils/matrix.h>
+#include <darknet/utils/utils.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

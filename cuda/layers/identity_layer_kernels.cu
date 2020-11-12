@@ -3,8 +3,8 @@
 #include <cublas_v2.h>
 
 extern "C" {
-#include "layers/identity_layer.h"
-#include "dark_cuda.h"
+#include <darknet/layers/identity_layer.h>
+#include <darknet/dark_cuda.h>
 }
 
 

@@ -1,18 +1,18 @@
-#include "network.h"
-#include "layers/box.h"
-#include "layers/cost_layer.h"
-#include "layers/detection_layer.h"
-#include "layers/region_layer.h"
-#include "utils/utils.h"
-#include "utils/parser.h"
-#include "images/image.h"
-#include "demo.h"
-#include "darknet.h"
+#include <darknet/network.h>
+#include <darknet/layers/box.h>
+#include <darknet/layers/cost_layer.h>
+#include <darknet/layers/detection_layer.h>
+#include <darknet/layers/region_layer.h>
+#include <darknet/utils/utils.h>
+#include <darknet/utils/parser.h>
+#include <darknet/images/image.h>
+#include <darknet/applications/demo.h>
+#include <darknet/darknet.h>
 
 #ifdef WIN32
 
 #include <time.h>
-#include "utils/gettimeofday.h"
+#include <darknet/utils/gettimeofday.h>
 
 #else
 
@@ -22,7 +22,7 @@
 
 #ifdef OPENCV
 
-#include "images/http_stream.h"
+#include <darknet/images/http_stream.h>
 
 static char **demo_names;
 static image **demo_alphabet;

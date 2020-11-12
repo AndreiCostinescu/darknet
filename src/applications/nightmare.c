@@ -1,7 +1,7 @@
-#include "network.h"
-#include "utils/parser.h"
-#include "utils/blas.h"
-#include "utils/utils.h"
+#include <darknet/network.h>
+#include <darknet/utils/parser.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/utils.h>
 
 // ./darknet nightmare cfg/extractor.recon.cfg ~/trained/yolo-coco.conv frame6.png -reconstruct -iters 500 -i 3 -lambda .1 -rate .01 -smooth 2
 

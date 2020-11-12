@@ -1,5 +1,6 @@
 #set_target_properties(dark PROPERTIES PUBLIC_HEADER "${exported_headers};${CMAKE_CURRENT_LIST_DIR}/include/yolo_v2_class.hpp")
-set_target_properties(dark PROPERTIES PUBLIC_HEADER "${CMAKE_CURRENT_LIST_DIR}/../include/darknet.h;${CMAKE_CURRENT_LIST_DIR}/../include/yolo_v2_class.hpp")
+set_target_properties(dark PROPERTIES PUBLIC_HEADER
+        "${CMAKE_CURRENT_LIST_DIR}/../include/darknet/darknet.h;${CMAKE_CURRENT_LIST_DIR}/../include/darknet/yolo_v2_class.hpp")
 
 # set_target_properties(dark PROPERTIES CXX_VISIBILITY_PRESET hidden)
 

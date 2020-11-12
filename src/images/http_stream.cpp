@@ -1,7 +1,7 @@
 #define _XOPEN_SOURCE
 
-#include "images/image.h"
-#include "images/http_stream.h"
+#include <darknet/images/image.h>
+#include <darknet/images/http_stream.h>
 
 //
 // a single-threaded, multi client(using select), debug webserver - streaming out mjpg.
@@ -34,7 +34,7 @@ using std::endl;
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
-#include "utils/gettimeofday.h"
+#include <darknet/utils/gettimeofday.h>
 
 #define PORT        unsigned long
 #define ADDRPOINTER   int*
@@ -61,7 +61,7 @@ static int close_socket(SOCKET s) {
 }
 
 #else   // _WIN32 - else: nix
-#include "utils/darkunistd.h"
+#include <darknet/utils/darkunistd.h>
 #include <fcntl.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -547,7 +547,7 @@ int send_http_post_request(char *http_post_host, int server_port, const char *vi
 #endif
 
 //#define CPPHTTPLIB_OPENSSL_SUPPORT
-#include "images/httplib.h"
+#include <darknet/images/httplib.h>
 
 // https://webhook.site/
 // https://github.com/yhirose/cpp-httplib
@@ -720,10 +720,8 @@ void total_time() {}
 #endif // C++11
 
 #include <deque>
-#include <vector>
-#include <iostream>
-#include "utils/blas.h"
-#include "utils/utils.h"
+#include <darknet/utils/blas.h>
+#include <darknet/utils/utils.h>
 
 struct similarity_detections_t {
     int old_id, new_id;

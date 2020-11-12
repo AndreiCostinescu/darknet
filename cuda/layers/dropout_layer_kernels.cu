@@ -3,13 +3,13 @@
 #include <cublas_v2.h>
 #include <cstring>
 
-#include "layers/dropout_layer.h"
-#include "dark_cuda.h"
-#include "utils/blas.h"
-#include "utils/utils.h"
+#include <darknet/layers/dropout_layer.h>
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/utils.h>
 
-#include "images/image_opencv.h"
-#include "images/image.h"
+#include <darknet/images/image_opencv.h>
+#include <darknet/images/image.h>
 
 
 __global__ void

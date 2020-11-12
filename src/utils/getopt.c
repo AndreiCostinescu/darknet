@@ -1,5 +1,5 @@
 #ifdef _MSC_VER
-#include "utils/getopt.h"
+#include <darknet/utils/getopt.h>
 
 #ifdef __cplusplus
 extern "C" {

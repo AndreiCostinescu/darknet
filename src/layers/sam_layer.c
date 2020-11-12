@@ -1,7 +1,7 @@
-#include "layers/sam_layer.h"
-#include "dark_cuda.h"
-#include "utils/utils.h"
-#include "utils/blas.h"
+#include <darknet/layers/sam_layer.h>
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/utils.h>
+#include <darknet/utils/blas.h>
 #include <stdio.h>
 #include <assert.h>
 

@@ -1,6 +1,6 @@
-#include "layers/dropout_layer.h"
-#include "utils/utils.h"
-#include "dark_cuda.h"
+#include <darknet/layers/dropout_layer.h>
+#include <darknet/utils/utils.h>
+#include <darknet/dark_cuda.h>
 #include <stdlib.h>
 #include <stdio.h>
 

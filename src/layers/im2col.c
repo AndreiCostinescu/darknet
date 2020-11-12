@@ -1,4 +1,4 @@
-#include "layers/im2col.h"
+#include <darknet/layers/im2col.h>
 #include <stdio.h>
 
 float im2col_get_pixel(float *im, int height, int width, int channels,

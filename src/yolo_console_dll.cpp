@@ -20,7 +20,7 @@
 //#define ZED_STEREO
 
 
-#include "yolo_v2_class.hpp"    // imported functions from DLL
+#include <darknet/yolo_v2_class.hpp>    // imported functions from DLL
 
 #ifdef OPENCV
 #ifdef ZED_STEREO

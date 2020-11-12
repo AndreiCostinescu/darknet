@@ -1,5 +1,5 @@
-#include "layers/box.h"
-#include "utils/utils.h"
+#include <darknet/layers/box.h>
+#include <darknet/utils/utils.h>
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>

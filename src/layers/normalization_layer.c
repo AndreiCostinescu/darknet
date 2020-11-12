@@ -1,6 +1,6 @@
-#include "layers/normalization_layer.h"
-#include "utils/blas.h"
-#include "utils/utils.h"
+#include <darknet/layers/normalization_layer.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/utils.h>
 #include <stdio.h>
 
 layer make_normalization_layer(int batch, int w, int h, int c, int size, float alpha, float beta, float kappa,

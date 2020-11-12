@@ -1,8 +1,8 @@
-#include "network.h"
-#include "layers/cost_layer.h"
-#include "utils/blas.h"
-#include "utils/parser.h"
-#include "utils/utils.h"
+#include <darknet/network.h>
+#include <darknet/layers/cost_layer.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/parser.h>
+#include <darknet/utils/utils.h>
 
 typedef struct {
     float *x;

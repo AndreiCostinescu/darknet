@@ -1,6 +1,6 @@
-#include "layers/crop_layer.h"
-#include "dark_cuda.h"
-#include "utils/utils.h"
+#include <darknet/layers/crop_layer.h>
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/utils.h>
 #include <stdio.h>
 
 image get_crop_image(crop_layer l) {

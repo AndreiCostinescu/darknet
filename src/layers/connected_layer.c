@@ -1,10 +1,10 @@
-#include "layers/connected_layer.h"
-#include "layers/batchnorm_layer.h"
-#include "layers/convolutional_layer.h"
-#include "dark_cuda.h"
-#include "utils/blas.h"
-#include "utils/gemm.h"
-#include "utils/utils.h"
+#include <darknet/layers/connected_layer.h>
+#include <darknet/layers/batchnorm_layer.h>
+#include <darknet/layers/convolutional_layer.h>
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/gemm.h>
+#include <darknet/utils/utils.h>
 
 #include <math.h>
 #include <stdio.h>

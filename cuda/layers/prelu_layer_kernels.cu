@@ -3,9 +3,9 @@
 #include <cublas_v2.h>
 
 extern "C" {
-#include "layers/prelu_layer.h"
-#include "utils/blas.h"
-#include "dark_cuda.h"
+#include <darknet/layers/prelu_layer.h>
+#include <darknet/utils/blas.h>
+#include <darknet/dark_cuda.h>
 }
 
 # if 0

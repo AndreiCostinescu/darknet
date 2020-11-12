@@ -1,9 +1,9 @@
-#include "layers/region_layer.h"
-#include "layers/activations.h"
-#include "layers/box.h"
-#include "dark_cuda.h"
-#include "utils/blas.h"
-#include "utils/utils.h"
+#include <darknet/layers/region_layer.h>
+#include <darknet/layers/activations.h>
+#include <darknet/layers/box.h>
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/utils.h>
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>

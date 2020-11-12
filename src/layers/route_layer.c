@@ -1,7 +1,7 @@
-#include "layers/route_layer.h"
-#include "dark_cuda.h"
-#include "utils/utils.h"
-#include "utils/blas.h"
+#include <darknet/layers/route_layer.h>
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/utils.h>
+#include <darknet/utils/blas.h>
 #include <stdio.h>
 
 route_layer make_route_layer(int batch, int n, int *input_layers, int *input_sizes, int groups, int group_id,

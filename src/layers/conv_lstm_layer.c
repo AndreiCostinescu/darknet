@@ -2,13 +2,13 @@
 // Page 3: https://arxiv.org/pdf/1705.06368v3.pdf
 // https://wikimedia.org/api/rest_v1/media/math/render/svg/1edbece2559479959fe829e9c6657efb380debe7
 
-#include "layers/conv_lstm_layer.h"
-#include "layers/connected_layer.h"
-#include "layers/convolutional_layer.h"
-#include "dark_cuda.h"
-#include "utils/blas.h"
-#include "utils/gemm.h"
-#include "utils/utils.h"
+#include <darknet/layers/conv_lstm_layer.h>
+#include <darknet/layers/connected_layer.h>
+#include <darknet/layers/convolutional_layer.h>
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/gemm.h>
+#include <darknet/utils/utils.h>
 
 #include <math.h>
 #include <stdio.h>

@@ -1,9 +1,9 @@
-#include "layers/shortcut_layer.h"
-#include "layers/convolutional_layer.h"
-#include "dark_cuda.h"
-#include "utils/blas.h"
-#include "utils/utils.h"
-#include "utils/gemm.h"
+#include <darknet/layers/shortcut_layer.h>
+#include <darknet/layers/convolutional_layer.h>
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/utils.h>
+#include <darknet/utils/gemm.h>
 #include <stdio.h>
 #include <assert.h>
 

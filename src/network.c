@@ -1,47 +1,47 @@
-#include "darknet.h"
+#include <darknet/darknet.h>
 
 #include <stdio.h>
 #include <time.h>
 #include <assert.h>
 
-#include "network.h"
-#include "images/image.h"
-#include "utils/blas.h"
-#include "utils/data.h"
-#include "utils/utils.h"
+#include <darknet/network.h>
+#include <darknet/images/image.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/data.h>
+#include <darknet/utils/utils.h>
 
-#include "layers/activation_layer.h"
-#include "layers/avgpool_layer.h"
-#include "layers/batchnorm_layer.h"
-#include "layers/connected_layer.h"
-#include "layers/conv_lstm_layer.h"
-#include "layers/convolutional_layer.h"
-#include "layers/cost_layer.h"
-#include "layers/crnn_layer.h"
-#include "layers/crop_layer.h"
-#include "layers/detection_layer.h"
-#include "layers/dropout_layer.h"
-#include "layers/gaussian_yolo_layer.h"
-#include "layers/gru_layer.h"
-#include "layers/identity_layer.h"
-#include "layers/local_layer.h"
-#include "layers/linear_layer.h"
-#include "layers/maxpool_layer.h"
-#include "layers/normalization_layer.h"
-#include "layers/region_layer.h"
-#include "layers/reorg_layer.h"
-#include "layers/reorg_old_layer.h"
-#include "layers/rnn_layer.h"
-#include "layers/route_layer.h"
-#include "layers/prelu_layer.h"
-#include "layers/sam_layer.h"
-#include "layers/scale_channels_layer.h"
-#include "layers/shortcut_layer.h"
-#include "layers/softmax_layer.h"
-#include "layers/upsample_layer.h"
-#include "layers/yolo_layer.h"
+#include <darknet/layers/activation_layer.h>
+#include <darknet/layers/avgpool_layer.h>
+#include <darknet/layers/batchnorm_layer.h>
+#include <darknet/layers/connected_layer.h>
+#include <darknet/layers/conv_lstm_layer.h>
+#include <darknet/layers/convolutional_layer.h>
+#include <darknet/layers/cost_layer.h>
+#include <darknet/layers/crnn_layer.h>
+#include <darknet/layers/crop_layer.h>
+#include <darknet/layers/detection_layer.h>
+#include <darknet/layers/dropout_layer.h>
+#include <darknet/layers/gaussian_yolo_layer.h>
+#include <darknet/layers/gru_layer.h>
+#include <darknet/layers/identity_layer.h>
+#include <darknet/layers/local_layer.h>
+#include <darknet/layers/linear_layer.h>
+#include <darknet/layers/maxpool_layer.h>
+#include <darknet/layers/normalization_layer.h>
+#include <darknet/layers/region_layer.h>
+#include <darknet/layers/reorg_layer.h>
+#include <darknet/layers/reorg_old_layer.h>
+#include <darknet/layers/rnn_layer.h>
+#include <darknet/layers/route_layer.h>
+#include <darknet/layers/prelu_layer.h>
+#include <darknet/layers/sam_layer.h>
+#include <darknet/layers/scale_channels_layer.h>
+#include <darknet/layers/shortcut_layer.h>
+#include <darknet/layers/softmax_layer.h>
+#include <darknet/layers/upsample_layer.h>
+#include <darknet/layers/yolo_layer.h>
 
-#include "utils/parser.h"
+#include <darknet/utils/parser.h>
 
 load_args get_base_args(network *net) {
     load_args args = {0};

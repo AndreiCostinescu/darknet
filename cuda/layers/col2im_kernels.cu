@@ -2,8 +2,8 @@
 #include <curand.h>
 #include <cublas_v2.h>
 
-#include "layers/col2im.h"
-#include "dark_cuda.h"
+#include <darknet/layers/col2im.h>
+#include <darknet/dark_cuda.h>
 
 // src: https://github.com/BVLC/caffe/blob/master/src/caffe/util/im2col.cu
 // You may also want to read: https://github.com/BVLC/caffe/blob/master/LICENSE

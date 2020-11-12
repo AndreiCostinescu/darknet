@@ -1,10 +1,10 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#include "images/image.h"
-#include "utils/utils.h"
-#include "utils/blas.h"
-#include "dark_cuda.h"
+#include <darknet/images/image.h>
+#include <darknet/utils/utils.h>
+#include <darknet/utils/blas.h>
+#include <darknet/dark_cuda.h>
 #include <stdio.h>
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES

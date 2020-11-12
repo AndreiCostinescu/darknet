@@ -1,5 +1,5 @@
-#include "utils/blas.h"
-#include "utils/utils.h"
+#include <darknet/utils/blas.h>
+#include <darknet/utils/utils.h>
 
 #include <math.h>
 #include <assert.h>

@@ -9,9 +9,9 @@ int gpu_index = 0;
 
 #ifdef GPU
 
-#include "dark_cuda.h"
-#include "utils/utils.h"
-#include "utils/blas.h"
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/utils.h>
+#include <darknet/utils/blas.h>
 #include "assert.h"
 #include <stdlib.h>
 #include <time.h>
@@ -529,6 +529,6 @@ void printData(float *data, int size, const char *name) {
 }
 
 #else // GPU
-#include "darknet.h"
+#include <darknet/darknet.h>
 void cuda_set_device(int n) {}
 #endif // GPU

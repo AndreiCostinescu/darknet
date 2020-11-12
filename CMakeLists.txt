@@ -22,8 +22,8 @@ foreach (p LIB BIN INCLUDE CMAKE)
 endforeach ()
 
 configure_file(
-        "${CMAKE_CURRENT_LIST_DIR}/include/version.h.in"
-        "${CMAKE_CURRENT_LIST_DIR}/include/version.h"
+        "${CMAKE_CURRENT_LIST_DIR}/include/darknet/version.h.in"
+        "${CMAKE_CURRENT_LIST_DIR}/include/darknet/version.h"
 )
 
 ### Collect all source files

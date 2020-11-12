@@ -1,4 +1,4 @@
-#include "darknet.h"
+#include <darknet/darknet.h>
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -7,11 +7,11 @@
 #include <crtdbg.h>
 #endif
 
-#include "utils/parser.h"
-#include "utils/utils.h"
-#include "dark_cuda.h"
-#include "utils/blas.h"
-#include "layers/connected_layer.h"
+#include <darknet/utils/parser.h>
+#include <darknet/utils/utils.h>
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/blas.h>
+#include <darknet/layers/connected_layer.h>
 
 
 extern void predict_classifier(char *datacfg, char *cfgfile, char *weightfile, char *filename, int top);
@@ -194,7 +194,7 @@ void partial(char *cfgfile, char *weightfile, char *outfile, int max) {
     save_weights_upto(net, outfile, max);
 }
 
-#include "layers/convolutional_layer.h"
+#include <darknet/layers/convolutional_layer.h>
 
 void rescale_net(char *cfgfile, char *weightfile, char *outfile) {
     gpu_index = -1;

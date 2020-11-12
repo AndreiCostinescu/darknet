@@ -1,9 +1,9 @@
-#include "images/image_opencv.h"
+#include <darknet/images/image_opencv.h>
 #include <iostream>
 
 #ifdef OPENCV
 
-#include "utils/utils.h"
+#include <darknet/utils/utils.h>
 
 #include <cstdio>
 #include <cstdlib>
@@ -44,7 +44,7 @@
 #include <librealsense2/rs.hpp>
 #include <librealsense2/rsutil.h>
 #include <exception>
-#include "images/realsense-opencv-helpers.hpp"
+#include <darknet/images/realsense-opencv-helpers.hpp>
 
 #endif
 
@@ -75,7 +75,7 @@ using std::endl;
 #endif    // USE_CMAKE_LIBS
 #endif    // CV_VERSION_EPOCH
 
-#include "images/http_stream.h"
+#include <darknet/images/http_stream.h>
 
 #ifndef CV_RGB
 #define CV_RGB(r, g, b) cvScalar( (b), (g), (r), 0 )

@@ -1,7 +1,7 @@
-#include "network.h"
-#include "layers/cost_layer.h"
-#include "utils/utils.h"
-#include "utils/parser.h"
+#include <darknet/network.h>
+#include <darknet/layers/cost_layer.h>
+#include <darknet/utils/utils.h>
+#include <darknet/utils/parser.h>
 
 void extract_voxel(char *lfile, char *rfile, char *prefix)
 {

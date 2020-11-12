@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "utils/option_list.h"
-#include "utils/utils.h"
-#include "utils/data.h"
+#include <darknet/utils/option_list.h>
+#include <darknet/utils/utils.h>
+#include <darknet/utils/data.h>
 
 list *read_data_cfg(char *filename) {
     FILE *file = fopen(filename, "r");

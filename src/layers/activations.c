@@ -1,4 +1,4 @@
-#include "layers/activations.h"
+#include <darknet/layers/activations.h>
 
 #include <math.h>
 #include <stdio.h>

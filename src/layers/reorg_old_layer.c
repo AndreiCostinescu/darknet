@@ -1,7 +1,7 @@
-#include "layers/reorg_old_layer.h"
-#include "dark_cuda.h"
-#include "utils/blas.h"
-#include "utils/utils.h"
+#include <darknet/layers/reorg_old_layer.h>
+#include <darknet/dark_cuda.h>
+#include <darknet/utils/blas.h>
+#include <darknet/utils/utils.h>
 #include <stdio.h>
 
 

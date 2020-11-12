@@ -1,9 +1,9 @@
 /* Added on 2019.5.7 */
 /* forward only */
 
-#include "layers/prelu_layer.h"
-#include "utils/blas.h"
-#include "assert.h"
+#include <darknet/layers/prelu_layer.h>
+#include <darknet/utils/blas.h>
+#include <assert.h>
 
 layer make_prelu_layer(int batch, int h, int w, int c, int n, int verbose) {
     layer l = {(LAYER_TYPE) 0};

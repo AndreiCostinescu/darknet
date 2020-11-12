@@ -3,9 +3,9 @@
 #include <cublas_v2.h>
 
 extern "C" {
-#include "layers/linear_layer.h"
-#include "utils/blas.h"
-#include "dark_cuda.h"
+#include <darknet/layers/linear_layer.h>
+#include <darknet/utils/blas.h>
+#include <darknet/dark_cuda.h>
 }
 
 extern "C" void forward_linear_layer_gpu(const layer l, network_state net) {
