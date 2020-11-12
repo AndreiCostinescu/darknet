@@ -57,7 +57,7 @@ src/version.h
 # Build artifacts
 lib/
 share/
-include/darknet/
+# include/darknet/
 uselib
 uselib_track
 darknet
