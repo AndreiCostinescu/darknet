@@ -807,8 +807,34 @@ extern "C" image get_image_from_stream_letterbox(cap_cv *cap, int w, int h, int 
 // ----------------------------------------
 
 #ifdef REALSENSE
-extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, void **in_depth, int dont_close,
-                                          int letterbox) {
+extern "C" image process_image_from_realsense(int w, int h, int c, mat_cv *srcImg, mat_cv **inImg, int letterbox) {
+    auto src = (cv::Mat *) srcImg;
+    image im;
+    if (letterbox) {
+        if (inImg != nullptr) {
+            *inImg = (mat_cv *) new cv::Mat(src->rows, src->cols, CV_8UC(c));
+            cv::resize(*src, **(cv::Mat **) inImg, (*(cv::Mat **) inImg)->size(), 0, 0, cv::INTER_LINEAR);
+        }
+
+        if (c > 1) cv::cvtColor(*src, *src, cv::COLOR_RGB2BGR);
+        image tmp = mat_to_image(*src);
+        im = letterbox_image(tmp, w, h);
+        free_image(tmp);
+        release_mat((mat_cv **) &src);
+    } else {
+        if (inImg != nullptr) {
+            *(cv::Mat **) inImg = src;
+        }
+
+        cv::Mat new_img = cv::Mat(h, w, CV_8UC(c));
+        cv::resize(*src, new_img, new_img.size(), 0, 0, cv::INTER_LINEAR);
+        if (c > 1) cv::cvtColor(new_img, new_img, cv::COLOR_RGB2BGR);
+        im = mat_to_image(new_img);
+    }
+    return im;
+}
+
+extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, void **in_depth, int letterbox) {
     c = c ? c : 3;
     cv::Mat *src = NULL;
     static int once = 1;
@@ -824,7 +850,6 @@ extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, 
         }
         printf("Started Realsense pipeline!\n");
     }
-    // rs2::depth_frame *depth;
     try{
         rs2::frameset currentFrame;
         currentFrame = pipe.wait_for_frames();
@@ -842,29 +867,7 @@ extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, 
         error(errorBuffer);
     }
 
-    image im;
-    if (letterbox) {
-        *in_img = (mat_cv *) new cv::Mat(src->rows, src->cols, CV_8UC(c));
-        cv::resize(*src, **(cv::Mat **) in_img, (*(cv::Mat **) in_img)->size(), 0, 0, cv::INTER_LINEAR);
-        // *in_depth = (mat_cv *) new cv::Mat(src->rows, src->cols, CV_8UC(c));
-        // cv::resize(depth, **(cv::Mat **) in_depth, (*(cv::Mat **) in_depth)->size(), 0, 0, cv::INTER_LINEAR);
-
-        if (c > 1) cv::cvtColor(*src, *src, cv::COLOR_RGB2BGR);
-        image tmp = mat_to_image(*src);
-        im = letterbox_image(tmp, w, h);
-        free_image(tmp);
-        release_mat((mat_cv **) &src);
-    } else {
-        *(cv::Mat **) in_img = src;
-        // *(cv::Mat **) in_depth = new cv::Mat(depth);
-
-        cv::Mat new_img = cv::Mat(h, w, CV_8UC(c));
-        cv::resize(*src, new_img, new_img.size(), 0, 0, cv::INTER_LINEAR);
-        if (c > 1) cv::cvtColor(new_img, new_img, cv::COLOR_RGB2BGR);
-        im = mat_to_image(new_img);
-    }
-
-    return im;
+    return process_image_from_realsense(w, h, c, (mat_cv *) src, in_img, letterbox);
 }
 // ----------------------------------------
 
@@ -872,7 +875,7 @@ extern "C" void release_depth_frame(void **depth_frame) {
     try {
         rs2::depth_frame *rs2_depth_frame = (rs2::depth_frame *) (*depth_frame);
         delete rs2_depth_frame;
-        depth_frame = nullptr;
+        *depth_frame = nullptr;
     } catch (...) {
         cerr << " OpenCV/Realsense exception: depth_frame " << depth_frame << " can't be released! \n";
     }

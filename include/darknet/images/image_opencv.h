@@ -85,7 +85,8 @@ image get_image_from_stream_cpp(cap_cv *cap);
 image get_image_from_stream_resize(cap_cv *cap, int w, int h, int c, mat_cv **in_img, int dont_close);
 image get_image_from_stream_letterbox(cap_cv *cap, int w, int h, int c, mat_cv **in_img, int dont_close);
 #ifdef REALSENSE
-image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, void **in_depth, int dont_close, int letterbox);
+image process_image_from_realsense(int w, int h, int c, mat_cv *src, mat_cv **in_img, int letterbox);
+image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, void **in_depth, int letterbox);
 void release_depth_frame(void **depth_frame);
 #endif
 

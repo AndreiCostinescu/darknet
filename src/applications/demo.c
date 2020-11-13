@@ -70,7 +70,7 @@ void *fetch_in_thread(void *ptr) {
             error("Program was not compiled with REALSENSE support...");
 #else
             printf("Getting image...\n");
-            in_s = get_image_from_realsense(net.w, net.h, net.c, &in_img, &in_depth, dont_close_stream, letter_box);
+            in_s = get_image_from_realsense(net.w, net.h, net.c, &in_img, &in_depth, letter_box);
             printf("Got image!\n");
 #endif
         } else {
@@ -479,7 +479,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
     free(cv_images);
     if (input_realsense) {
         for (j = 0; j < avg_frames; ++j) {
-            free(cv_depth_images[j]);
+            release_depth_frame(&cv_depth_images[j]);
         }
         free(cv_depth_images);
     }
