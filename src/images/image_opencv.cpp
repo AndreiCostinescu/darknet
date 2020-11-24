@@ -874,6 +874,10 @@ extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, 
 extern "C" void release_depth_frame(void **depth_frame) {
     try {
         rs2::depth_frame *rs2_depth_frame = (rs2::depth_frame *) (*depth_frame);
+        // printf("Releasing depth frame rs2_depth_frame %d\n", rs2_depth_frame);
+        if (rs2_depth_frame != 0) {
+            // printf("Content at (0, 0) is %f\n", rs2_depth_frame->get_distance(0, 0));
+        }
         delete rs2_depth_frame;
         *depth_frame = nullptr;
     } catch (...) {
@@ -942,12 +946,15 @@ void getRealsenseDepthPoint(rs2::depth_frame const &depthFrame, int x, int y, fl
 
 extern "C" void draw_detections_cv_depth(mat_cv **mat, void **depth_mat, detection *detections, int num, float thresh,
                                          char **names, image **alphabet, int classes, int printDetections) {
+    // printf("Entering draw_detections_cv_depth\n");
     int use_depth = (depth_mat != nullptr);
+    // printf("Using depth? %d\n", use_depth);
     try {
         if (mat == nullptr) {
             return;
         }
         cv::Mat *show_img = (cv::Mat *) (*mat);
+        // printf("ShowImg = %d\n", show_img);
         int i, j;
         if (!show_img) return;
         // printf("Show Img size (%d x %d)\n", show_img->rows, show_img->cols);
@@ -979,7 +986,9 @@ extern "C" void draw_detections_cv_depth(mat_cv **mat, void **depth_mat, detecti
                     } else {
                         strcat(labelString, ", ");
                         strcat(labelString, names[j]);
-                        printf(", %s: %.0f%% ", names[j], detections[i].prob[j] * 100);
+                        if (printDetections) {
+                            printf(", %s: %.0f%% ", names[j], detections[i].prob[j] * 100);
+                        }
                     }
                 }
             }
