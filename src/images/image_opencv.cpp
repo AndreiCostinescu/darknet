@@ -854,7 +854,7 @@ extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, 
 image get_image_realsense_explicit(int w, int h, int c, mat_cv **in_img, void **in_depth, int letterbox,
                                    int depthAsMat) {
     c = c ? c : 3;
-    cv::Mat *src, *depth;
+    cv::Mat *src = 0, *depth = 0;
     static int once = 1;
     static rs2::pipeline pipe;
     static rs2::align alignTo(RS2_STREAM_COLOR);
