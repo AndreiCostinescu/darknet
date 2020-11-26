@@ -47,6 +47,7 @@ static int demo_index = 0;
 static mat_cv **cv_images;
 static void **cv_depth_images;
 
+int depthAsMat = 1;
 mat_cv *in_img, *det_img, *show_img;
 void *in_depth, *det_depth, *show_depth;
 
@@ -69,9 +70,15 @@ void *fetch_in_thread(void *ptr) {
 #ifndef REALSENSE
             error("Program was not compiled with REALSENSE support...");
 #else
-            printf("Getting image...\n");
-            in_s = get_image_from_realsense(net.w, net.h, net.c, &in_img, &in_depth, letter_box);
+            // printf("Getting image...\n");
+            in_s = get_image_realsense_explicit(net.w, net.h, net.c, &in_img, &in_depth, letter_box, depthAsMat);
+            /*
+            printf("fetch_in_thread: In image size = (%d x %d)\n", ((cv::Mat *) in_img)->rows,
+                   ((cv::Mat *) in_img)->cols);
+            printf("fetch_in_thread: In depth size = (%d x %d)\n", ((cv::Mat *) in_depth)->rows,
+                   ((cv::Mat *) in_depth)->cols);
             printf("Got image!\n");
+            //*/
 #endif
         } else {
             if (letter_box) {
@@ -107,11 +114,12 @@ void *detect_in_thread(void *ptr) {
             this_thread_yield();
         }
 
-        layer l = net.layers[net.n - 1];
+        // layer l = net.layers[net.n - 1];
         float *X = det_s.data;
-        printf("Predicting data...\n");
-        float *prediction = network_predict(net, X);
-        printf("Predicted image!\n");
+        // printf("Predicting data...\n");
+        // float *prediction = network_predict(net, X);
+        network_predict(net, X);
+        // printf("Predicted image!\n");
 
         if (input_realsense) {
             cv_depth_images[demo_index] = det_depth;
@@ -150,7 +158,8 @@ double get_wall_time() {
 void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int cam_index, const char *filename,
           char **names, int classes, int avgframes, int frame_skip, char *prefix, char *out_filename, int mjpeg_port,
           int dontdraw_bbox, int json_port, int dont_show, int ext_output, int letter_box_in, int time_limit_sec,
-          char *http_post_host, int benchmark, int benchmark_layers, int use_realsense) {
+          char *http_post_host, int benchmark, int benchmark_layers, int use_realsense, int depth_as_mat) {
+    depthAsMat = depth_as_mat;
     input_realsense = use_realsense;
 #ifndef REALSENSE
     if (input_realsense) {
@@ -324,10 +333,10 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
                 set_track_id(local_dets, local_nboxes, demo_thresh, l.sim_thresh, l.track_ciou_norm,
                              l.track_history_size, l.dets_for_track, l.dets_for_show);
 
-            //printf("\033[2J");
-            //printf("\033[1;1H");
-            //printf("\nFPS:%.1f\n", fps);
-            printf("Objects:\n\n");
+            // printf("\033[2J");
+            // printf("\033[1;1H");
+            // printf("\nFPS:%.1f\n", fps);
+            // printf("Objects:\n\n");
 
             ++frame_id;
             if (demo_json_port > 0) {
@@ -347,8 +356,9 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
 
             if (!benchmark && !dontdraw_bbox) {
                 if (input_realsense) {
-                    draw_detections_cv_depth(&show_img, &show_depth, local_dets, local_nboxes, demo_thresh, demo_names,
-                                             demo_alphabet, demo_classes, demo_ext_output);
+                    draw_detections_cv_depth_explicit(
+                            &show_img, &show_depth, local_dets, local_nboxes, demo_thresh, demo_names, demo_alphabet,
+                            demo_classes, demo_ext_output, depthAsMat);
                 } else {
                     draw_detections_cv_v3(&show_img, local_dets, local_nboxes, demo_thresh, demo_names, demo_alphabet,
                                           demo_classes, demo_ext_output);
@@ -417,11 +427,15 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
                 if (!benchmark) {
                     release_mat(&show_img);
                     if (input_realsense) {
+                        if (depthAsMat) {
+                            release_mat((mat_cv **) &show_depth);
+                        } else {
 #ifdef REALSENSE
-                        release_depth_frame(&show_depth);
+                            release_depth_frame(&show_depth);
 #else
-                        release_mat(&show_depth);
+                            error("Program was not compiled with REALSENSE support... Can not release depth frame");
 #endif
+                        }
                     }
                 }
                 show_img = det_img;
@@ -502,7 +516,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
 void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int cam_index, const char *filename,
           char **names, int classes, int avgframes, int frame_skip, char *prefix, char *out_filename, int mjpeg_port,
           int dontdraw_bbox, int json_port, int dont_show, int ext_output, int letter_box_in, int time_limit_sec,
-          char *http_post_host, int benchmark, int benchmark_layers, int use_realsense)
+          char *http_post_host, int benchmark, int benchmark_layers, int use_realsense, int depth_as_mat)
 {
     fprintf(stderr, "Demo needs OpenCV for webcam images.\n");
 }

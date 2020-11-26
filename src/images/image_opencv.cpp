@@ -807,13 +807,23 @@ extern "C" image get_image_from_stream_letterbox(cap_cv *cap, int w, int h, int 
 // ----------------------------------------
 
 #ifdef REALSENSE
-extern "C" image process_image_from_realsense(int w, int h, int c, mat_cv *srcImg, mat_cv **inImg, int letterbox) {
+extern "C" image process_image_from_realsense(int w, int h, int c, mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
+                                              void **inDepth, int letterbox) {
+    return process_image_realsense_explicit(w, h, c, srcImg, inImg, srcDepth, inDepth, letterbox, 1);
+}
+
+extern "C" image process_image_realsense_explicit(int w, int h, int c, mat_cv *srcImg, mat_cv **inImg,
+                                                  const void *srcDepth, void **inDepth, int letterbox, int depthAsMat) {
     auto src = (cv::Mat *) srcImg;
     image im;
     if (letterbox) {
         if (inImg != nullptr) {
             *inImg = (mat_cv *) new cv::Mat(src->rows, src->cols, CV_8UC(c));
             cv::resize(*src, **(cv::Mat **) inImg, (*(cv::Mat **) inImg)->size(), 0, 0, cv::INTER_LINEAR);
+            if (depthAsMat && inDepth != nullptr && srcDepth != nullptr) {
+                *inDepth = (mat_cv *) new cv::Mat(src->rows, src->cols, CV_8UC(c));
+                cv::resize(*((cv::Mat *) srcDepth), **(cv::Mat **) inDepth, (*(cv::Mat **) inDepth)->size());
+            }
         }
 
         if (c > 1) cv::cvtColor(*src, *src, cv::COLOR_RGB2BGR);
@@ -824,6 +834,9 @@ extern "C" image process_image_from_realsense(int w, int h, int c, mat_cv *srcIm
     } else {
         if (inImg != nullptr) {
             *(cv::Mat **) inImg = src;
+            if (depthAsMat && inDepth != nullptr && srcDepth != nullptr) {
+                *(cv::Mat **) inDepth = new cv::Mat(*((cv::Mat *) srcDepth));
+            }
         }
 
         cv::Mat new_img = cv::Mat(h, w, CV_8UC(c));
@@ -835,8 +848,13 @@ extern "C" image process_image_from_realsense(int w, int h, int c, mat_cv *srcIm
 }
 
 extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, void **in_depth, int letterbox) {
+    return get_image_realsense_explicit(w, h, c, in_img, in_depth, letterbox, 1);
+}
+
+image get_image_realsense_explicit(int w, int h, int c, mat_cv **in_img, void **in_depth, int letterbox,
+                                   int depthAsMat) {
     c = c ? c : 3;
-    cv::Mat *src = NULL;
+    cv::Mat *src, *depth;
     static int once = 1;
     static rs2::pipeline pipe;
     static rs2::align alignTo(RS2_STREAM_COLOR);
@@ -845,20 +863,27 @@ extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, 
         try {
             pipe.start();
         } catch (const rs2::error &e) {
-            printf("RealSense error calling %s (%s): %s\n", e.get_failed_function(), e.get_failed_args(), e.what());
+            printf("RealSense error calling %s (%s): %s\n", e.get_failed_function().c_str(),
+                   e.get_failed_args().c_str(), e.what());
             error("RealSense error!\n");
         }
         printf("Started Realsense pipeline!\n");
     }
-    try{
+    try {
         rs2::frameset currentFrame;
         currentFrame = pipe.wait_for_frames();
         currentFrame = alignTo.process(currentFrame);  // Make sure the frames are spatially aligned
 
-        *in_depth = (void *) new rs2::depth_frame(currentFrame.get_depth_frame());
+        if (depthAsMat) {
+            *in_depth = nullptr;
+            depth = new cv::Mat(depth_frame_to_meters(currentFrame.get_depth_frame()));
+        } else {
+            *in_depth = (void *) new rs2::depth_frame(currentFrame.get_depth_frame());
+        }
         src = new cv::Mat(frame_to_mat(currentFrame.get_color_frame()));
     } catch (const rs2::error &e) {
-        printf("RealSense error calling %s (%s): %s\n", e.get_failed_function(), e.get_failed_args(), e.what());
+        printf("RealSense error calling %s (%s): %s\n", e.get_failed_function().c_str(), e.get_failed_args().c_str(),
+               e.what());
         error("RealSense error!\n");
     } catch (std::exception &e) {
         char errorBuffer[512];
@@ -867,8 +892,17 @@ extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, 
         error(errorBuffer);
     }
 
-    return process_image_from_realsense(w, h, c, (mat_cv *) src, in_img, letterbox);
+    image im = process_image_realsense_explicit(w, h, c, (mat_cv * ) src, in_img, (void *) depth, in_depth,
+                                                letterbox, depthAsMat);
+    /*
+    printf("In image size = (%d x %d)\n", (*((cv::Mat **) in_img))->rows, (*((cv::Mat **) in_img))->cols);
+    if (depthAsMat) {
+        printf("In depth size = (%d x %d)\n", (*((cv::Mat **) in_depth))->rows, (*((cv::Mat **) in_depth))->cols);
+    }
+    //*/
+    return im;
 }
+
 // ----------------------------------------
 
 extern "C" void release_depth_frame(void **depth_frame) {
@@ -931,33 +965,27 @@ extern "C" void draw_detections_cv_v3(mat_cv **mat, detection *detections, int n
 // ----------------------------------------
 
 
-#ifdef REALSENSE
-void getRealsenseDepthPoint(rs2::depth_frame const &depthFrame, int x, int y, float (&point)[3]) {
-    float position[2];
-    position[0] = static_cast<float>(x);
-    position[1] = static_cast<float>(y);
-
-    // De-project from pixel to point in 3D
-    rs2_intrinsics intr = depthFrame.get_profile().as<rs2::video_stream_profile>().get_intrinsics(); // Calibration data
-    // Get the distance at the given pixel
-    rs2_deproject_pixel_to_point(point, &intr, position, depthFrame.get_distance(x, y));
-}
-#endif
-
 extern "C" void draw_detections_cv_depth(mat_cv **mat, void **depth_mat, detection *detections, int num, float thresh,
                                          char **names, image **alphabet, int classes, int printDetections) {
-    // printf("Entering draw_detections_cv_depth\n");
+    draw_detections_cv_depth_explicit(mat, depth_mat, detections, num, thresh, names, alphabet, classes,
+                                      printDetections, 1);
+}
+
+extern "C" void draw_detections_cv_depth_explicit(
+        mat_cv **mat, void **depth_mat, detection *detections, int num, float thresh, char **names, image **alphabet,
+        int classes, int printDetections, int depthAsMat) {
+    // printf("Entering draw_detections_cv_depth_explicit\n");
     int use_depth = (depth_mat != nullptr);
-    // printf("Using depth? %d\n", use_depth);
+    // printf("draw_detections: Using depth? %d\n", use_depth);
     try {
         if (mat == nullptr) {
             return;
         }
         cv::Mat *show_img = (cv::Mat *) (*mat);
-        // printf("ShowImg = %d\n", show_img);
+        // printf("draw_detections: ShowImg = %d\n", show_img);
         int i, j;
         if (!show_img) return;
-        // printf("Show Img size (%d x %d)\n", show_img->rows, show_img->cols);
+        // printf("draw_detections: Show Img size (%d x %d)\n", show_img->rows, show_img->cols);
         static int frame_id = 0;
         frame_id++;
 
@@ -999,11 +1027,7 @@ extern "C" void draw_detections_cv_depth(mat_cv **mat, void **depth_mat, detecti
                 float red = get_color(2, offset, classes);
                 float green = get_color(1, offset, classes);
                 float blue = get_color(0, offset, classes);
-                float rgb[3];
 
-                rgb[0] = red;
-                rgb[1] = green;
-                rgb[2] = blue;
                 box b = detections[i].bbox;
                 if (std::isnan(b.w) || std::isinf(b.w)) b.w = 0.5;
                 if (std::isnan(b.h) || std::isinf(b.h)) b.h = 0.5;
@@ -1030,24 +1054,26 @@ extern "C" void draw_detections_cv_depth(mat_cv **mat, void **depth_mat, detecti
                 int scaled_x_center = 0;
                 int scaled_y_center = 0;
                 if (use_depth) {
+                    if (depthAsMat) {
+                        const auto *show_depth = (cv::Mat *) (*depth_mat);
+                        scaled_x_center = (int) (((float) box_x_center) / (float) show_img->cols *
+                                                 (float) show_depth->cols);
+                        scaled_y_center = (int) (((float) box_y_center) / (float) show_img->rows *
+                                                 (float) show_depth->rows);
+                        depth = (float) show_depth->at<double>(scaled_y_center, scaled_x_center);
+                        if (depth < 0.1 || depth > 10) {
+                            depth = -1;
+                        }
+                    } else {
 #ifdef REALSENSE
-                    const rs2::depth_frame *show_depth = (const rs2::depth_frame *) (*depth_mat);
-                    scaled_x_center = box_x_center;
-                    scaled_y_center = box_y_center;
-                    float point3d[3];
-                    getRealsenseDepthPoint(*show_depth, scaled_x_center, scaled_y_center, point3d);
-                    depth = point3d[2];
-#else
-                    auto show_depth = (cv::Mat *) (*depth_mat);
-                    scaled_x_center = (int) (((float) box_x_center) / (float) show_img->cols *
-                                             (float) show_depth->cols);
-                    scaled_y_center = (int) (((float) box_y_center) / (float) show_img->rows *
-                                             (float) show_depth->rows);
-                    depth = show_depth->at<float>(scaled_y_center, scaled_x_center);
-                    if (depth < 0.1 || depth > 10) {
-                        depth = -1;
-                    }
+                        const auto *show_depth = (const rs2::depth_frame *) (*depth_mat);
+                        scaled_x_center = box_x_center;
+                        scaled_y_center = box_y_center;
+                        float point3d[3];
+                        getRealsense3DPoint(*show_depth, scaled_x_center, scaled_y_center, point3d);
+                        depth = point3d[2];
 #endif
+                    }
                     char buff[40];
                     sprintf(buff, "; depth = %.2fm", depth);
                     strcat(labelString, buff);
@@ -1492,18 +1518,22 @@ extern "C" void cv_draw_object(image sized, float *truth_cpu, int max_boxes, int
 
     int it_trackbar_value = 200;
     std::string const it_trackbar_name = "iterations";
-    int it_tb_res = cv::createTrackbar(it_trackbar_name, window_name, &it_trackbar_value, 1000);
+    // int it_tb_res = cv::createTrackbar(it_trackbar_name, window_name, &it_trackbar_value, 1000);
+    cv::createTrackbar(it_trackbar_name, window_name, &it_trackbar_value, 1000);
 
     int lr_trackbar_value = 10;
     std::string const lr_trackbar_name = "learning_rate exp";
-    int lr_tb_res = cv::createTrackbar(lr_trackbar_name, window_name, &lr_trackbar_value, 20);
+    // int lr_tb_res = cv::createTrackbar(lr_trackbar_name, window_name, &lr_trackbar_value, 20);
+    cv::createTrackbar(lr_trackbar_name, window_name, &lr_trackbar_value, 20);
 
     int cl_trackbar_value = 0;
     std::string const cl_trackbar_name = "class_id";
-    int cl_tb_res = cv::createTrackbar(cl_trackbar_name, window_name, &cl_trackbar_value, classes - 1);
+    // int cl_tb_res = cv::createTrackbar(cl_trackbar_name, window_name, &cl_trackbar_value, classes - 1);
+    cv::createTrackbar(cl_trackbar_name, window_name, &cl_trackbar_value, classes - 1);
 
     std::string const bo_trackbar_name = "box-only";
-    int bo_tb_res = cv::createTrackbar(bo_trackbar_name, window_name, boxonly, 1);
+    // int bo_tb_res = cv::createTrackbar(bo_trackbar_name, window_name, boxonly, 1);
+    cv::createTrackbar(bo_trackbar_name, window_name, boxonly, 1);
 
     int i = 0;
 
@@ -1516,7 +1546,7 @@ extern "C" void cv_draw_object(image sized, float *truth_cpu, int max_boxes, int
         if (pressed_key == 27 || pressed_key == 1048603) break;// break;  // ESC - save & exit
 
         frame_clone = frame.clone();
-        char buff[100];
+        // char buff[100];
         std::string lr_value = "learning_rate = " + std::to_string(1.0 / pow(2, lr_trackbar_value));
         cv::putText(frame_clone, lr_value, cv::Point2i(10, 20), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(10, 50, 10),
                     3);

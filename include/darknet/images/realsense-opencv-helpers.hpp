@@ -44,4 +44,15 @@ static cv::Mat depth_frame_to_meters(const rs2::depth_frame &f) {
     return dm;
 }
 
+void getRealsense3DPoint(rs2::depth_frame const &depthFrame, int x, int y, float (&point)[3]) {
+    float position[2];
+    position[0] = static_cast<float>(x);
+    position[1] = static_cast<float>(y);
+
+    // De-project from pixel to point in 3D
+    rs2_intrinsics intr = depthFrame.get_profile().as<rs2::video_stream_profile>().get_intrinsics(); // Calibration data
+    // Get the distance at the given pixel
+    rs2_deproject_pixel_to_point(point, &intr, position, depthFrame.get_distance(x, y));
+}
+
 #endif
