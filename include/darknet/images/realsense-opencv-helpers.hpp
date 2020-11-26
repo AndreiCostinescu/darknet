@@ -7,6 +7,7 @@
 
 #include <opencv2/opencv.hpp>   // Include OpenCV API
 #include <librealsense2/rs.hpp> // Include RealSense Cross Platform API
+#include <librealsense2/rsutil.h> // Include RealSense Cross Platform API
 #include <exception>
 
 // Convert rs2::frame to cv::Mat
