@@ -975,7 +975,7 @@ extern "C" void draw_detections_cv_depth_explicit(
         mat_cv **mat, void **depth_mat, detection *detections, int num, float thresh, char **names, image **alphabet,
         int classes, int printDetections, int depthAsMat) {
     // printf("Entering draw_detections_cv_depth_explicit\n");
-    int use_depth = (depth_mat != nullptr);
+    int use_depth = (depth_mat != nullptr && (*depth_mat) != nullptr);
     // printf("draw_detections: Using depth? %d\n", use_depth);
     try {
         if (mat == nullptr) {
