@@ -820,10 +820,10 @@ extern "C" image process_image_realsense_explicit(int w, int h, int c, mat_cv *s
         if (inImg != nullptr) {
             *inImg = (mat_cv *) new cv::Mat(src->rows, src->cols, CV_8UC(c));
             cv::resize(*src, **(cv::Mat **) inImg, (*(cv::Mat **) inImg)->size(), 0, 0, cv::INTER_LINEAR);
-            if (depthAsMat && inDepth != nullptr && srcDepth != nullptr) {
-                *inDepth = (mat_cv *) new cv::Mat(src->rows, src->cols, CV_8UC(c));
-                cv::resize(*((cv::Mat *) srcDepth), **(cv::Mat **) inDepth, (*(cv::Mat **) inDepth)->size());
-            }
+        }
+        if (depthAsMat && inDepth != nullptr && srcDepth != nullptr) {
+            *inDepth = (mat_cv *) new cv::Mat(src->rows, src->cols, CV_8UC(c));
+            cv::resize(*((cv::Mat *) srcDepth), **(cv::Mat **) inDepth, (*(cv::Mat **) inDepth)->size());
         }
 
         if (c > 1) cv::cvtColor(*src, *src, cv::COLOR_RGB2BGR);
@@ -834,9 +834,9 @@ extern "C" image process_image_realsense_explicit(int w, int h, int c, mat_cv *s
     } else {
         if (inImg != nullptr) {
             *(cv::Mat **) inImg = src;
-            if (depthAsMat && inDepth != nullptr && srcDepth != nullptr) {
-                *(cv::Mat **) inDepth = new cv::Mat(*((cv::Mat *) srcDepth));
-            }
+        }
+        if (depthAsMat && inDepth != nullptr && srcDepth != nullptr) {
+            *(cv::Mat **) inDepth = new cv::Mat(*((cv::Mat *) srcDepth));
         }
 
         cv::Mat new_img = cv::Mat(h, w, CV_8UC(c));
