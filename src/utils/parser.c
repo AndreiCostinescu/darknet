@@ -51,7 +51,7 @@ typedef struct {
     list *options;
 } section;
 
-list *read_cfg(char *filename);
+list *read_cfg(const char *filename);
 
 LAYER_TYPE string_to_layer_type(char *type) {
     if (strcmp(type, "[linear]") == 0) return LINEAR_LAYER;
@@ -1349,7 +1349,7 @@ void set_train_only_bn(network net) {
     }
 }
 
-network parse_network_cfg_custom_verbose(char *filename, int batch, int time_steps, int verbose) {
+network parse_network_cfg_custom_verbose(const char *filename, int batch, int time_steps, int verbose) {
     list *sections = read_cfg(filename);
     node *n = sections->front;
     if (!n) error("Config file has no sections");
@@ -1736,19 +1736,19 @@ network parse_network_cfg_custom_verbose(char *filename, int batch, int time_ste
     return net;
 }
 
-network parse_network_cfg_custom(char *filename, int batch, int time_steps) {
+network parse_network_cfg_custom(const char *filename, int batch, int time_steps) {
     return parse_network_cfg_custom_verbose(filename, batch, time_steps, 0);
 }
 
-network parse_network_cfg_verbose(char *filename, int verbose) {
+network parse_network_cfg_verbose(const char *filename, int verbose) {
     return parse_network_cfg_custom_verbose(filename, 0, 0, verbose);
 }
 
-network parse_network_cfg(char *filename) {
+network parse_network_cfg(const char *filename) {
     return parse_network_cfg_verbose(filename, 0);
 }
 
-list *read_cfg(char *filename) {
+list *read_cfg(const char *filename) {
     FILE *file = fopen(filename, "r");
     if (file == 0) file_error(filename);
     char *line;
