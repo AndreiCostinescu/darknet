@@ -1890,7 +1890,7 @@ void save_prelu_weights(layer l, FILE *fp) {
     fwrite(l.weights, sizeof(float), l.n, fp);
 }
 
-void save_weights_upto(network net, char *filename, int cutoff) {
+void save_weights_upto(network net, const char *filename, int cutoff) {
 #ifdef GPU
     if (net.gpu_index >= 0) {
         cuda_set_device(net.gpu_index);
@@ -1988,7 +1988,7 @@ void save_weights_upto(network net, char *filename, int cutoff) {
     fclose(fp);
 }
 
-void save_weights(network net, char *filename) {
+void save_weights(network net, const char *filename) {
     save_weights_upto(net, filename, net.n);
 }
 
@@ -2178,7 +2178,7 @@ int load_shortcut_weights(layer l, FILE *fp) {
     return numLayerWeights;
 }
 
-void load_weights_upto(network *net, char *filename, int cutoff) {
+void load_weights_upto(network *net, const char *filename, int cutoff) {
 #ifdef GPU
     if (net->gpu_index >= 0) {
         cuda_set_device(net->gpu_index);
@@ -2300,12 +2300,12 @@ void load_weights_upto(network *net, char *filename, int cutoff) {
     fclose(fp);
 }
 
-void load_weights(network *net, char *filename) {
+void load_weights(network *net, const char *filename) {
     load_weights_upto(net, filename, net->n);
 }
 
 // load network & force - set batch size
-network *load_network_custom_verbose(char *cfg, char *weights, int clear, int batch, int verbose) {
+network *load_network_custom_verbose(const char *cfg, const char *weights, int clear, int batch, int verbose) {
     if (verbose) {
         printf(" Try to load cfg: %s, weights: %s, clear = %d \n", cfg, weights, clear);
     }
@@ -2326,12 +2326,12 @@ network *load_network_custom_verbose(char *cfg, char *weights, int clear, int ba
 }
 
 // load network & force - set batch size
-network *load_network_custom(char *cfg, char *weights, int clear, int batch) {
+network *load_network_custom(const char *cfg, const char *weights, int clear, int batch) {
     return load_network_custom_verbose(cfg, weights, clear, batch, 0);
 }
 
 // load network & get batch size from cfg-file
-network *load_network_verbose(char *cfg, char *weights, int clear, int verbose) {
+network *load_network_verbose(const char *cfg, const char *weights, int clear, int verbose) {
     printf(" Try to load cfg: %s, clear = %d \n", cfg, clear);
     network *net = (network *) xcalloc(1, sizeof(network));
     *net = parse_network_cfg_verbose(cfg, verbose);
@@ -2347,6 +2347,6 @@ network *load_network_verbose(char *cfg, char *weights, int clear, int verbose) 
 }
 
 // load network & get batch size from cfg-file
-network *load_network(char *cfg, char *weights, int clear) {
+network *load_network(const char *cfg, const char *weights, int clear) {
     return load_network_verbose(cfg, weights, clear, 0);
 }

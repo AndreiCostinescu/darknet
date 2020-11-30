@@ -996,10 +996,10 @@ typedef struct box_label {
 
 
 // parser.c
-LIB_API network *load_network(char *cfg, char *weights, int clear);
-LIB_API network *load_network_verbose(char *cfg, char *weights, int clear, int verbose);
-LIB_API network *load_network_custom(char *cfg, char *weights, int clear, int batch);
-LIB_API network *load_network_custom_verbose(char *cfg, char *weights, int clear, int batch, int verbose);
+LIB_API network *load_network(const char *cfg, const char *weights, int clear);
+LIB_API network *load_network_verbose(const char *cfg, const char *weights, int clear, int verbose);
+LIB_API network *load_network_custom(const char *cfg, const char *weights, int clear, int batch);
+LIB_API network *load_network_custom_verbose(const char *cfg, const char *weights, int clear, int batch, int verbose);
 LIB_API void free_network(network net);
 LIB_API void free_network_ptr(network* net);
 
