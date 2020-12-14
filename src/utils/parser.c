@@ -1168,7 +1168,7 @@ learning_rate_policy get_policy(char *s) {
     return CONSTANT;
 }
 
-void parse_net_options(list *options, network *net) {
+void parse_net_options(list *options, network *net, int verbose) {
     net->max_batches = option_find_int(options, "max_batches", 0);
     net->batch = option_find_int(options, "batch", 1);
     net->learning_rate = option_find_float(options, "learning_rate", .001);
@@ -1256,10 +1256,14 @@ void parse_net_options(list *options, network *net) {
 #ifdef CUDNN_HALF
         if (compute_capability >= 700) net->cudnn_half = 1;
         else net->cudnn_half = 0;
-#endif// CUDNN_HALF
-        fprintf(stderr, " %d : compute_capability = %d, cudnn_half = %d, GPU: %s \n", net->gpu_index,
-                compute_capability, net->cudnn_half, device_name);
-    } else fprintf(stderr, " GPU isn't used \n");
+#endif // CUDNN_HALF
+        if (verbose) {
+            fprintf(stderr, " %d : compute_capability = %d, cudnn_half = %d, GPU: %s \n", net->gpu_index,
+                    compute_capability, net->cudnn_half, device_name);
+        }
+    } else if (verbose) {
+        fprintf(stderr, " GPU isn't used \n");
+    }
 #endif// GPU
     if (net->policy == STEP) {
         net->step = option_find_int(options, "step", 1);
@@ -1363,10 +1367,12 @@ network parse_network_cfg_custom_verbose(const char *filename, int batch, int ti
     section *s = (section *) n->val;
     list *options = s->options;
     if (!is_network(s)) error("First section must be [net] or [network]");
-    parse_net_options(options, &net);
+    parse_net_options(options, &net, verbose);
 
 #ifdef GPU
-    printf("net.optimized_memory = %d \n", net.optimized_memory);
+    if (verbose) {
+        printf("net.optimized_memory = %d \n", net.optimized_memory);
+    }
     if (net.optimized_memory >= 2 && params.train) {
         pre_allocate_pinned_memory((size_t) 1024 * 1024 * 1024 * 8);   // pre-allocate 8 GB CPU-RAM for pinned memory
     }
@@ -1384,8 +1390,10 @@ network parse_network_cfg_custom_verbose(const char *filename, int batch, int ti
     params.batch = net.batch;
     params.time_steps = net.time_steps;
     params.net = net;
-    printf("mini_batch = %d, batch = %d, time_steps = %d, train = %d \n", net.batch, net.batch * net.subdivisions,
-           net.time_steps, params.train);
+    if (verbose) {
+        printf("mini_batch = %d, batch = %d, time_steps = %d, train = %d \n", net.batch, net.batch * net.subdivisions,
+               net.time_steps, params.train);
+    }
 
     int avg_outputs = 0;
     int avg_counter = 0;
@@ -1687,8 +1695,10 @@ network parse_network_cfg_custom_verbose(const char *filename, int batch, int ti
     net.outputs = get_network_output_size(net);
     net.output = get_network_output(net);
     avg_outputs = avg_outputs / avg_counter;
-    fprintf(stderr, "Total BFLOPS %5.3f \n", bflops);
-    fprintf(stderr, "avg_outputs = %d \n", avg_outputs);
+    if (verbose) {
+        fprintf(stderr, "Total BFLOPS %5.3f \n", bflops);
+        fprintf(stderr, "avg_outputs = %d \n", avg_outputs);
+    }
 #ifdef GPU
     get_cuda_stream();
     get_cuda_memcpy_stream();
@@ -1712,8 +1722,10 @@ network parse_network_cfg_custom_verbose(const char *filename, int batch, int ti
             CHECK_CUDA(cudaMalloc((void **) net.output16_gpu, *net.max_output16_size * sizeof(short))); //sizeof(half)
         }
         if (workspace_size) {
-            fprintf(stderr, "Allocate additional workspace_size = %1.2f MB (%d) \n", (float) workspace_size / 1000000,
-                    workspace_size);
+            if (verbose) {
+                fprintf(stderr, "Allocate additional workspace_size = %1.2f MB (%d) \n",
+                        (float) workspace_size / 1000000, workspace_size);
+            }
             net.workspace_size = workspace_size / sizeof(float) + 1;
             net.workspace = cuda_make_array(0, workspace_size / sizeof(float) + 1);
         } else {
@@ -1730,8 +1742,8 @@ network parse_network_cfg_custom_verbose(const char *filename, int batch, int ti
 
     LAYER_TYPE lt = net.layers[net.n - 1].type;
     if ((net.w % 32 != 0 || net.h % 32 != 0) && (lt == YOLO || lt == REGION || lt == DETECTION)) {
-        printf("\n Warning: width=%d and height=%d in cfg-file must be divisible by 32 for default networks Yolo v1/v2/v3!!! \n\n",
-               net.w, net.h);
+        fprintf(stderr, "\nWarning: width=%d and height=%d in cfg-file must be divisible by 32 "
+                        "for default networks Yolo v1/v2/v3!!! \n\n", net.w, net.h);
     }
     return net;
 }
@@ -2178,14 +2190,16 @@ int load_shortcut_weights(layer l, FILE *fp) {
     return numLayerWeights;
 }
 
-void load_weights_upto(network *net, const char *filename, int cutoff) {
+void load_weights_upto_verbose(network *net, const char *filename, int cutoff, int verbose) {
 #ifdef GPU
     if (net->gpu_index >= 0) {
         cuda_set_device(net->gpu_index);
     }
 #endif
-    fprintf(stderr, "Loading weights from %s...", filename);
-    fflush(stdout);
+    if (verbose) {
+        fprintf(stderr, "Loading weights from %s...", filename);
+        fflush(stdout);
+    }
     FILE *fp = fopen(filename, "rb");
     if (!fp) file_error(filename);
 
@@ -2196,22 +2210,28 @@ void load_weights_upto(network *net, const char *filename, int cutoff) {
     fread(&minor, sizeof(int), 1, fp);
     fread(&revision, sizeof(int), 1, fp);
     if ((major * 10 + minor) >= 2) {
-        printf("\n seen 64");
+        if (verbose) {
+            printf("\n seen 64");
+        }
         uint64_t iseen = 0;
         fread(&iseen, sizeof(uint64_t), 1, fp);
         *net->seen = iseen;
     } else {
-        printf("\n seen 32");
+        if (verbose) {
+            printf("\n seen 32");
+        }
         uint32_t iseen = 0;
         fread(&iseen, sizeof(uint32_t), 1, fp);
         *net->seen = iseen;
     }
-    printf(", trained: %.0f K-images (%.0f Kilo-batches_64) \n", (float) (*net->seen / 1000),
-           (float) (*net->seen / 64000));
     *net->cur_iteration = get_current_batch(*net);
-    printf("CUR_ITERATION: %d\n", *net->cur_iteration);
     int transpose = (major > 1000) || (minor > 1000);
-    printf("TRANSPOSE: %d\n", transpose);
+    if (verbose) {
+        printf(", trained: %.0f K-images (%.0f Kilo-batches_64) \n", (float) (*net->seen / 1000),
+               (float) (*net->seen / 64000));
+        printf("CUR_ITERATION: %d\n", *net->cur_iteration);
+        printf("TRANSPOSE: %d\n", transpose);
+    }
 
     int i;
     int numberNetworkWeights = 0;
@@ -2282,10 +2302,14 @@ void load_weights_upto(network *net, const char *filename, int cutoff) {
             int locations = l.out_w * l.out_h;
             int size = l.size * l.size * l.c * l.n * locations;
             fread(l.biases, sizeof(float), l.outputs, fp);
-            printf("LOAD LOCAL BIAS: %d\n", l.outputs);
+            if (verbose) {
+                printf("LOAD LOCAL BIAS: %d\n", l.outputs);
+            }
             numberNetworkWeights += l.outputs;
             fread(l.weights, sizeof(float), size, fp);
-            printf("LOAD LOCAL WEIGHTS: %d\n", size);
+            if (verbose) {
+                printf("LOAD LOCAL WEIGHTS: %d\n", size);
+            }
             numberNetworkWeights += size;
 #ifdef GPU
             if (gpu_index >= 0) {
@@ -2295,9 +2319,15 @@ void load_weights_upto(network *net, const char *filename, int cutoff) {
         }
         if (feof(fp)) break;
     }
-    fprintf(stderr, "Done! Loaded %d layers from weights-file \n", i);
-    fprintf(stderr, "Done! Loaded %d weights from weights-file \n", numberNetworkWeights);
-    fclose(fp);
+    if (verbose) {
+        fprintf(stderr, "Done! Loaded %d layers from weights-file \n", i);
+        fprintf(stderr, "Done! Loaded %d weights from weights-file \n", numberNetworkWeights);
+        fclose(fp);
+    }
+}
+
+void load_weights_upto(network *net, const char *filename, int cutoff) {
+    load_weights_upto_verbose(net, filename, cutoff, 0);
 }
 
 void load_weights(network *net, const char *filename) {

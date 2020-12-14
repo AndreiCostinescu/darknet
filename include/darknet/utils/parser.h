@@ -15,6 +15,7 @@ void save_weights(network net, const char *filename);
 void save_weights_upto(network net, const char *filename, int cutoff);
 void save_weights_double(network net, const char *filename);
 void load_weights(network *net, const char *filename);
+void load_weights_upto_verbose(network *net, const char *filename, int cutoff, int verbose);
 void load_weights_upto(network *net, const char *filename, int cutoff);
 
 #ifdef __cplusplus

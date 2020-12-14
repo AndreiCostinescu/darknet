@@ -439,7 +439,7 @@ float train_network_batch(network net, data d, int n) {
     return (float) sum / (n * batch);
 }
 
-int recalculate_workspace_size(network *net) {
+int recalculate_workspace_size(network *net, int verbose) {
 #ifdef GPU
     cuda_set_device(net->gpu_index);
     if (gpu_index >= 0) cuda_free(net->workspace);
@@ -460,9 +460,13 @@ int recalculate_workspace_size(network *net) {
 
 #ifdef GPU
     if (gpu_index >= 0) {
-        printf("\ntry to allocate additional workspace_size = %1.2f MB \n", (float) workspace_size / 1000000);
+        if (verbose) {
+            printf("\ntry to allocate additional workspace_size = %1.2f MB \n", (float) workspace_size / 1000000);
+        }
         net->workspace = cuda_make_array(0, workspace_size / sizeof(float) + 1);
-        printf("CUDA allocate done! \n");
+        if (verbose) {
+            printf("CUDA allocate done! \n");
+        }
     } else {
         free(net->workspace);
         net->workspace = (float *) xcalloc(1, workspace_size);
@@ -490,10 +494,10 @@ void set_batch_network(network *net, int b) {
 #endif
 
     }
-    recalculate_workspace_size(net); // recalculate workspace size
+    recalculate_workspace_size(net, 0); // recalculate workspace size
 }
 
-int resize_network(network *net, int w, int h) {
+int resize_network_verbose(network *net, int w, int h, int verbose) {
 #ifdef GPU
     cuda_set_device(net->gpu_index);
     if (gpu_index >= 0) {
@@ -592,7 +596,9 @@ int resize_network(network *net, int w, int h) {
 #ifdef GPU
     const int size = get_network_input_size(*net) * net->batch;
     if (gpu_index >= 0) {
-        printf(" try to allocate additional workspace_size = %1.2f MB \n", (float) workspace_size / 1000000);
+        if (verbose) {
+            printf(" try to allocate additional workspace_size = %1.2f MB \n", (float) workspace_size / 1000000);
+        }
         net->workspace = cuda_make_array(0, workspace_size / sizeof(float) + 1);
         net->input_state_gpu = cuda_make_array(0, size);
         if (cudaSuccess == cudaHostAlloc(&net->input_pinned_cpu, size * sizeof(float), cudaHostRegisterMapped))
@@ -602,7 +608,9 @@ int resize_network(network *net, int w, int h) {
             net->input_pinned_cpu = (float *) xcalloc(size, sizeof(float));
             net->input_pinned_cpu_flag = 0;
         }
-        printf(" CUDA allocate done! \n");
+        if (verbose) {
+            printf(" CUDA allocate done! \n");
+        }
     } else {
         free(net->workspace);
         net->workspace = (float *) xcalloc(1, workspace_size);
@@ -615,6 +623,10 @@ int resize_network(network *net, int w, int h) {
 #endif
     //fprintf(stderr, " Done!\n");
     return 0;
+}
+
+int resize_network(network *net, int w, int h) {
+    return resize_network_verbose(net, w, h, 0);
 }
 
 int get_network_output_size(network net) {
