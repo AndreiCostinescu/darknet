@@ -535,9 +535,7 @@ int resize_network_verbose(network *net, int w, int h, int verbose) {
             resize_conv_lstm_layer(&l, w, h);
         } else if (l.type == CROP) {
             resize_crop_layer(&l, w, h);
-        } else if (l.type == MAXPOOL) {
-            resize_maxpool_layer(&l, w, h);
-        } else if (l.type == LOCAL_AVGPOOL) {
+        } else if (l.type == MAXPOOL || l.type == LOCAL_AVGPOOL) {
             resize_maxpool_layer(&l, w, h);
         } else if (l.type == BATCHNORM) {
             resize_batchnorm_layer(&l, w, h);
