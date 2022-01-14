@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
 
 // declaration
 typedef void *mat_cv;
@@ -84,7 +84,7 @@ int set_capture_position_frame_cv(cap_cv *cap, int index);
 image get_image_from_stream_cpp(cap_cv *cap);
 image get_image_from_stream_resize(cap_cv *cap, int w, int h, int c, mat_cv **in_img, int dont_close);
 image get_image_from_stream_letterbox(cap_cv *cap, int w, int h, int c, mat_cv **in_img, int dont_close);
-#ifdef REALSENSE
+#ifdef DARKNET_USE_REALSENSE
 image process_image_from_realsense(int w, int h, int c, mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
                                    void **inDepth, int letterbox);
 image process_image_realsense_explicit(int w, int h, int c, mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
@@ -137,7 +137,7 @@ void show_anchors(int number_of_boxes, int num_of_clusters, float *rel_width_hei
 
 void show_opencv_info();
 
-#else   // OPENCV
+#else   // DARKNET_USE_OPENCV
 
 void show_opencv_info();
 int wait_key_cv(int delay);
@@ -145,7 +145,7 @@ int wait_until_press_key_cv();
 void destroy_all_windows_cv();
 void resize_window_cv(char const* window_name, int width, int height);
 
-#endif  // OPENCV
+#endif  // DARKNET_USE_OPENCV
 
 #ifdef __cplusplus
 }

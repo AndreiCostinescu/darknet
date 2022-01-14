@@ -40,7 +40,7 @@ int detect_image(const char *filename, bbox_t_container &container)
 }
 
 int detect_mat(const uint8_t* data, const size_t data_length, bbox_t_container &container) {
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     std::vector<char> vdata(data, data + data_length);
     cv::Mat image = imdecode(cv::Mat(vdata), 1);
 
@@ -50,7 +50,7 @@ int detect_mat(const uint8_t* data, const size_t data_length, bbox_t_container &
     return detection.size();
 #else
     return -1;
-#endif    // OPENCV
+#endif    // DARKNET_USE_OPENCV
 }
 
 int dispose() {
@@ -87,7 +87,7 @@ bool built_with_cudnn(){
 }
 
 bool built_with_opencv(){
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     return true;
 #else
     return false;

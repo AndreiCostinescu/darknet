@@ -14,7 +14,7 @@
 
 void demo_art(char *cfgfile, char *weightfile, int cam_index)
 {
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     network net = parse_network_cfg(cfgfile);
     if(weightfile){
         load_weights(&net, weightfile);

@@ -3,7 +3,7 @@
 
 #pragma once
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
 
 #include <opencv2/opencv.hpp>   // Include OpenCV API
 #include <librealsense2/rs.hpp> // Include RealSense Cross Platform API
