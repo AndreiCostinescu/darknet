@@ -22,7 +22,7 @@
 
 #include <darknet/yolo_v2_class.hpp>    // imported functions from DLL
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
 #ifdef ZED_STEREO
 #include <sl/Camera.hpp>
 #if ZED_SDK_MAJOR_VERSION == 2
@@ -214,7 +214,7 @@ void draw_boxes(cv::Mat mat_img, std::vector<bbox_t> result_vec, std::vector<std
         putText(mat_img, fps_str, cv::Point2f(10, 20), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.2, cv::Scalar(50, 255, 0), 2);
     }
 }
-#endif    // OPENCV
+#endif    // DARKNET_USE_OPENCV
 
 
 void show_console_result(std::vector<bbox_t> const result_vec, std::vector<std::string> const obj_names, int frame_id = -1) {
@@ -309,7 +309,7 @@ int main(int argc, char *argv[])
         if (filename.size() == 0) break;
 
         try {
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
             preview_boxes_t large_preview(100, 150, false), small_preview(50, 50, true);
             bool show_small_boxes = false;
 
@@ -682,14 +682,14 @@ int main(int argc, char *argv[])
                 show_console_result(result_vec, obj_names);
                 cv::waitKey(0);
             }
-#else   // OPENCV
+#else   // DARKNET_USE_OPENCV
             //std::vector<bbox_t> result_vec = detector.detect(filename);
 
             auto img = detector.load_image(filename);
             std::vector<bbox_t> result_vec = detector.detect(img);
             detector.free_image(img);
             show_console_result(result_vec, obj_names);
-#endif  // OPENCV
+#endif  // DARKNET_USE_OPENCV
         }
         catch (std::exception &e) { std::cerr << "exception: " << e.what() << "\n"; getchar(); }
         catch (...) { std::cerr << "unknown exception \n"; getchar(); }

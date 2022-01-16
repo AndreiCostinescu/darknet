@@ -1,7 +1,7 @@
 #include <darknet/images/image_opencv.h>
 #include <iostream>
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
 
 #include <darknet/utils/utils.h>
 
@@ -39,7 +39,7 @@
 #include <opencv2/core/version.hpp>
 #endif
 
-#ifdef REALSENSE
+#ifdef DARKNET_USE_REALSENSE
 
 #include <librealsense2/rs.hpp>
 #include <librealsense2/rsutil.h>
@@ -806,7 +806,7 @@ extern "C" image get_image_from_stream_letterbox(cap_cv *cap, int w, int h, int 
 }
 // ----------------------------------------
 
-#ifdef REALSENSE
+#ifdef DARKNET_USE_REALSENSE
 extern "C" image process_image_from_realsense(int w, int h, int c, mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
                                               void **inDepth, int letterbox) {
     return process_image_realsense_explicit(w, h, c, srcImg, inImg, srcDepth, inDepth, letterbox, 1);
@@ -1065,7 +1065,7 @@ extern "C" void draw_detections_cv_depth_explicit(
                             depth = -1;
                         }
                     } else {
-#ifdef REALSENSE
+#ifdef DARKNET_USE_REALSENSE
                         const auto *show_depth = (const rs2::depth_frame *) (*depth_mat);
                         scaled_x_center = box_x_center;
                         scaled_y_center = box_y_center;
@@ -1667,7 +1667,7 @@ void show_opencv_info() {
 
 
 }   // extern "C"
-#else  // OPENCV
+#else  // DARKNET_USE_OPENCV
 extern "C" void show_opencv_info()
 {
     std::cerr << " OpenCV isn't used - data augmentation will be slow \n";
@@ -1676,4 +1676,4 @@ extern "C" int wait_key_cv(int delay) { return 0; }
 extern "C" int wait_until_press_key_cv() { return 0; }
 extern "C" void destroy_all_windows_cv() {}
 extern "C" void resize_window_cv(char const* window_name, int width, int height) {}
-#endif // OPENCV
+#endif // DARKNET_USE_OPENCV

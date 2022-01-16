@@ -1045,7 +1045,7 @@ void blend_truth_mosaic(float *new_truth, int boxes, int truth_size, float *old_
     //printf("\n was %d bboxes, now %d bboxes \n", count_new_truth, t);
 }
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
 
 #include <darknet/images/http_stream.h>
 
@@ -1362,7 +1362,7 @@ data load_data_detection(int n, char **paths, int m, int w, int h, int c, int bo
 
     return d;
 }
-#else    // OPENCV
+#else    // DARKNET_USE_OPENCV
 void blend_images(image new_img, float alpha, image old_img, float beta)
 {
     int data_size = new_img.w * new_img.h * new_img.c;
@@ -1571,7 +1571,7 @@ data load_data_detection(int n, char **paths, int m, int w, int h, int c, int bo
     if (mixup_random_paths) free(mixup_random_paths);
     return d;
 }
-#endif    // OPENCV
+#endif    // DARKNET_USE_OPENCV
 
 void *load_thread(void *ptr)
 {
@@ -1950,7 +1950,7 @@ data load_data_augment(char **paths, int n, int m, char **labels, int k, tree *h
         }
     }
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     if (use_blur) {
         int i;
         for (i = 0; i < d.X.rows; ++i) {
@@ -1970,7 +1970,7 @@ data load_data_augment(char **paths, int n, int m, char **labels, int k, tree *h
             }
         }
     }
-#endif  // OPENCV
+#endif  // DARKNET_USE_OPENCV
 
     if (show_imgs) {
         int i, j;

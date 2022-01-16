@@ -166,7 +166,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     if (dont_show && show_imgs) show_imgs = 2;
     args.show_imgs = show_imgs;
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     //int num_threads = get_num_threads();
     //if(num_threads > 2) args.threads = get_num_threads() - 2;
     args.threads = 6 * ngpus;   // 3 for - Amazon EC2 Tesla V100: p3.2xlarge (8 logical cores) - p3.16xlarge
@@ -179,7 +179,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     sprintf(windows_name, "chart_%s.png", base);
     img = draw_train_chart(windows_name, max_img_loss, net.max_batches, number_of_lines, img_size, dont_show,
                            chart_path);
-#endif    //OPENCV
+#endif    //DARKNET_USE_OPENCV
     if (net.contrastive && args.threads > net.batch / 2) args.threads = net.batch / 2;
     if (net.track) {
         args.track = net.track;
@@ -383,7 +383,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         // set initial value, even if resume training from 10000 iteration
         if (avg_time < 0) avg_time = time_remaining;
         else avg_time = alpha_time * time_remaining + (1 - alpha_time) * avg_time;
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
         if (net.contrastive) {
             float cur_con_acc = -1;
             for (k = 0; k < net.n; ++k)
@@ -394,7 +394,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
         draw_train_loss(windows_name, img, img_size, avg_loss, max_img_loss, iteration, net.max_batches,
                         mean_average_precision, draw_precision, "mAP%", avg_contrastive_acc / 100, dont_show,
                         mjpeg_port, avg_time);
-#endif    // OPENCV
+#endif    // DARKNET_USE_OPENCV
 
         //if (i % 1000 == 0 || (i < 1000 && i % 100 == 0)) {
         //if (i % 100 == 0) {
@@ -427,7 +427,7 @@ void train_detector(char *datacfg, char *cfgfile, char *weightfile, int *gpus, i
     save_weights(net, buff);
     printf("If you want to train from the beginning, then use flag in the end of training command: -clear \n");
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     release_mat(&img);
     destroy_all_windows_cv();
 #endif
@@ -1569,9 +1569,9 @@ void calc_anchors(char *datacfg, int num_of_clusters, int width, int height, int
     }
 
     if (show) {
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
         show_anchors(number_of_boxes, num_of_clusters, rel_width_height_array, anchors_data, width, height);
-#endif // OPENCV
+#endif // DARKNET_USE_OPENCV
     }
     free(rel_width_height_array);
     free(counter_per_class);
@@ -1745,7 +1745,7 @@ void test_detector(char *datacfg, char *cfgfile, char *weightfile, char *filenam
     free_network(net);
 }
 
-#if defined(OPENCV) && defined(GPU)
+#if defined(DARKNET_USE_OPENCV) && defined(GPU)
 
 // adversarial attack dnn
 void
@@ -1909,14 +1909,14 @@ draw_object(char *datacfg, char *cfgfile, char *weightfile, char *filename, floa
     free_network(net);
 }
 
-#else // defined(OPENCV) && defined(GPU)
+#else // defined(DARKNET_USE_OPENCV) && defined(GPU)
 void draw_object(char *datacfg, char *cfgfile, char *weightfile, char *filename, float thresh, int dont_show, int it_num,
     int letter_box, int benchmark_layers)
 {
     printf(" ./darknet detector draw ... can't be used without OpenCV and CUDA! \n");
     getchar();
 }
-#endif // defined(OPENCV) && defined(GPU)
+#endif // defined(DARKNET_USE_OPENCV) && defined(GPU)
 
 void run_detector(int argc, char **argv) {
     int use_realsense = find_arg(argc, argv, "-use_realsense");

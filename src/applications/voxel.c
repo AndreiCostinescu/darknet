@@ -5,7 +5,7 @@
 
 void extract_voxel(char *lfile, char *rfile, char *prefix)
 {
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     int w = 1920;
     int h = 1080;
     int shift = 0;

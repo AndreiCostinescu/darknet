@@ -121,7 +121,7 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile, int *gpus,
     args.labels = labels;
     args.type = CLASSIFICATION_DATA;
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     //args.threads = 3;
     mat_cv* img = NULL;
     float max_img_loss = net.max_chart_loss;
@@ -209,7 +209,7 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile, int *gpus,
         else avg_time = alpha_time * time_remaining + (1 -  alpha_time) * avg_time;
         start = what_time_is_it_now();
         printf("%d, %.3f: %f, %f avg, %f rate, %lf seconds, %ld images, %f hours left\n", get_current_batch(net), (float)(*net.seen)/ train_images_num, loss, avg_loss, get_current_rate(net), sec(clock()-time), *net.seen, avg_time);
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
         if (net.contrastive) {
             float cur_con_acc = -1;
             int k;
@@ -219,7 +219,7 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile, int *gpus,
             printf("  avg_contrastive_acc = %f \n", avg_contrastive_acc);
         }
         if (!dontuse_opencv) draw_train_loss(windows_name, img, img_size, avg_loss, max_img_loss, i, net.max_batches, topk, draw_precision, topk_buff, avg_contrastive_acc / 100, dont_show, mjpeg_port, avg_time);
-#endif  // OPENCV
+#endif  // DARKNET_USE_OPENCV
 
         if (i >= (iter_save + 1000)) {
             iter_save = i;
@@ -249,7 +249,7 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile, int *gpus,
     sprintf(buff, "%s/%s_final.weights", backup_directory, base);
     save_weights(net, buff);
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     release_mat(&img);
     destroy_all_windows_cv();
 #endif
@@ -343,7 +343,7 @@ void train_classifier(char *datacfg, char *cfgfile, char *weightfile, int *gpus,
    printf("Loaded: %lf seconds\n", sec(clock()-time));
    time=clock();
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
 if(0){
 int u;
 for(u = 0; u < imgs; ++u){
@@ -1018,7 +1018,7 @@ void test_classifier(char *datacfg, char *cfgfile, char *weightfile, int target_
 
 void threat_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_index, const char *filename)
 {
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     float threat = 0;
     float roll = .2;
 
@@ -1158,7 +1158,7 @@ void threat_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_i
 
 void gun_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_index, const char *filename)
 {
-#ifdef OPENCV_DISABLE
+#ifdef DARKNET_USE_OPENCV_DISABLE
     int bad_cats[] = {218, 539, 540, 1213, 1501, 1742, 1911, 2415, 4348, 19223, 368, 369, 370, 1133, 1200, 1306, 2122, 2301, 2537, 2823, 3179, 3596, 3639, 4489, 5107, 5140, 5289, 6240, 6631, 6762, 7048, 7171, 7969, 7984, 7989, 8824, 8927, 9915, 10270, 10448, 13401, 15205, 18358, 18894, 18895, 19249, 19697};
 
     printf("Classifier Demo\n");
@@ -1243,7 +1243,7 @@ void gun_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_inde
 
 void demo_classifier(char *datacfg, char *cfgfile, char *weightfile, int cam_index, const char *filename, int benchmark, int benchmark_layers)
 {
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     printf("Classifier Demo\n");
     network net = parse_network_cfg_custom(cfgfile, 1, 0);
     if(weightfile){

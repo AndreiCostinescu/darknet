@@ -677,7 +677,7 @@ public:
         static image_t load_image(std::string image_filename);
         static void free_image(image_t m);
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
         std::vector<bbox_t> detect(cv::Mat mat, float thresh = 0.2, bool use_mean = false);
         std::shared_ptr<image_t> mat_to_image_resize(cv::Mat mat) const;
 #endif

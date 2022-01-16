@@ -4,7 +4,7 @@
 #include <darknet/utils/parser.h>
 #include <darknet/utils/utils.h>
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
 void reconstruct_picture(network net, float *features, image recon, image update, float rate, float momentum, float lambda, int smooth_size, int iters);
 
 

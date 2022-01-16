@@ -310,7 +310,7 @@ void send_json(detection *dets, int nboxes, int classes, char **names, long long
 // ----------------------------------------
 
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -606,7 +606,7 @@ int send_http_post_request(char *http_post_host, int server_port, const char *vi
 
 #endif   //  __CYGWIN__
 
-#endif      // OPENCV
+#endif      // DARKNET_USE_OPENCV
 
 // -----------------------------------------------------
 

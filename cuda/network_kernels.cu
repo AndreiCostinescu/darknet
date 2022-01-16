@@ -32,7 +32,7 @@
 #include <darknet/layers/route_layer.h>
 #include <darknet/layers/shortcut_layer.h>
 
-//#ifdef OPENCV
+//#ifdef DARKNET_USE_OPENCV
 //#include <opencv2/highgui/highgui_c.h>
 //#endif
 

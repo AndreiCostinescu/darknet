@@ -50,7 +50,7 @@ struct bbox_t_container {
 #include <iostream>
 #include <cmath>
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
 #include <opencv2/opencv.hpp>            // C++
 #include <opencv2/highgui/highgui_c.h>   // C
 #include <opencv2/imgproc/imgproc_c.h>   // C
@@ -105,7 +105,7 @@ public:
         return detection_boxes;
     }
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     std::vector<bbox_t> detect(cv::Mat mat, float thresh = 0.2, bool use_mean = false)
     {
         if(mat.data == NULL)
@@ -177,7 +177,7 @@ private:
         return out;
     }
 
-#endif    // OPENCV
+#endif    // DARKNET_USE_OPENCV
 
 public:
 
@@ -228,7 +228,7 @@ public:
 // --------------------------------------------------------------------------------
 
 
-#if defined(TRACK_OPTFLOW) && defined(OPENCV) && defined(GPU)
+#if defined(TRACK_OPTFLOW) && defined(DARKNET_USE_OPENCV) && defined(GPU)
 
 #include <opencv2/cudaoptflow.hpp>
 #include <opencv2/cudaimgproc.hpp>
@@ -418,7 +418,7 @@ public:
 
 };
 
-#elif defined(TRACK_OPTFLOW) && defined(OPENCV)
+#elif defined(TRACK_OPTFLOW) && defined(DARKNET_USE_OPENCV)
 
 //#include <opencv2/optflow.hpp>
 #include <opencv2/video/tracking.hpp>
@@ -547,10 +547,10 @@ public:
 
 class Tracker_optflow {};
 
-#endif    // defined(TRACK_OPTFLOW) && defined(OPENCV)
+#endif    // defined(TRACK_OPTFLOW) && defined(DARKNET_USE_OPENCV)
 
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
 
 static cv::Scalar obj_id_to_color(int obj_id) {
     int const colors[6][3] = { { 1,0,1 },{ 0,0,1 },{ 0,1,1 },{ 0,1,0 },{ 1,1,0 },{ 1,0,0 } };
@@ -1045,7 +1045,7 @@ public:
 
 };
 // ----------------------------------------------
-#endif    // OPENCV
+#endif    // DARKNET_USE_OPENCV
 
 #endif    // __cplusplus
 

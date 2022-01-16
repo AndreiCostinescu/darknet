@@ -20,7 +20,7 @@
 
 #endif
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
 
 #include <darknet/images/http_stream.h>
 
@@ -67,7 +67,7 @@ void *fetch_in_thread(void *ptr) {
         }
         int dont_close_stream = 0;    // set 1 if your IP-camera periodically turns off and turns on video-stream
         if (input_realsense) {
-#ifndef REALSENSE
+#ifndef DARKNET_USE_REALSENSE
             error("Program was not compiled with REALSENSE support...");
 #else
             // printf("Getting image...\n");
@@ -161,7 +161,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
           char *http_post_host, int benchmark, int benchmark_layers, int use_realsense, int depth_as_mat) {
     depthAsMat = depth_as_mat;
     input_realsense = use_realsense;
-#ifndef REALSENSE
+#ifndef DARKNET_USE_REALSENSE
     if (input_realsense) {
         error("Program was not compiled with REALSENSE support...");
     }
@@ -430,7 +430,7 @@ void demo(char *cfgfile, char *weightfile, float thresh, float hier_thresh, int 
                         if (depthAsMat) {
                             release_mat((mat_cv **) &show_depth);
                         } else {
-#ifdef REALSENSE
+#ifdef DARKNET_USE_REALSENSE
                             release_depth_frame(&show_depth);
 #else
                             error("Program was not compiled with REALSENSE support... Can not release depth frame");

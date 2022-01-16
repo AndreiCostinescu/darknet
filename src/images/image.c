@@ -702,12 +702,12 @@ void rgbgr_image(image im)
 
 void show_image(image p, const char *name)
 {
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     show_image_cv(p, name);
 #else
     fprintf(stderr, "Not compiled with OpenCV, saving to %s.png instead\n", name);
     save_image(p, name);
-#endif  // OPENCV
+#endif  // DARKNET_USE_OPENCV
 }
 
 void save_image_png(image im, const char *name)
@@ -963,7 +963,7 @@ void composite_3d(char *f1, char *f2, char *out, int delta)
     for(i = 0; i < c.w*c.h; ++i){
         c.data[i] = a.data[i];
     }
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     save_image_jpg(c, out);
 #else
     save_image(c, out);
@@ -1457,7 +1457,7 @@ void test_resize(char *filename)
     show_image(c3, "C3");
     show_image(c4, "C4");
 
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     while(1){
         image aug = random_augment_image(im, 0, .75, 320, 448, 320);
         show_image(aug, "aug");
@@ -1535,12 +1535,12 @@ image load_image_stb_resize(char *filename, int w, int h, int c)
 
 image load_image(char *filename, int w, int h, int c)
 {
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     //image out = load_image_stb(filename, c);
     image out = load_image_cv(filename, c);
 #else
     image out = load_image_stb(filename, c);    // without OpenCV
-#endif  // OPENCV
+#endif  // DARKNET_USE_OPENCV
 
     if((h && w) && (h != out.h || w != out.w)){
         image resized = resize_image(out, w, h);

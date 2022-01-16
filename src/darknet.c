@@ -430,7 +430,7 @@ void visualize(char *cfgfile, char *weightfile) {
         load_weights(&net, weightfile);
     }
     visualize_network(net);
-#ifdef OPENCV
+#ifdef DARKNET_USE_OPENCV
     wait_until_press_key_cv();
 #endif
 }
