@@ -8,7 +8,7 @@
 #include <darknet/dark_cuda.h>
 #ifdef WIN32
 #include <time.h>
-#include <darknet/utils/gettimeofday.h"
+#include <darknet/utils/gettimeofday.h>
 #else
 #include <sys/time.h>
 #endif

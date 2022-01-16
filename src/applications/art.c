@@ -6,7 +6,7 @@
 #include <darknet/applications/classifier.h>
 #ifdef WIN32
 #include <time.h>
-#include <darknet/utils/gettimeofday.h"
+#include <darknet/utils/gettimeofday.h>
 #else
 #include <sys/time.h>
 #endif
