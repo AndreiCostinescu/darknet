@@ -807,13 +807,15 @@ extern "C" image get_image_from_stream_letterbox(cap_cv *cap, int w, int h, int 
 // ----------------------------------------
 
 #ifdef DARKNET_USE_REALSENSE
-extern "C" image process_image_from_realsense(int w, int h, int c, mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
-                                              void **inDepth, int letterbox) {
+extern "C" image process_image_from_realsense(
+        int w, int h, int c, const mat_cv *const srcImg, mat_cv **inImg, const void *srcDepth, void **inDepth,
+        int letterbox) {
     return process_image_realsense_explicit(w, h, c, srcImg, inImg, srcDepth, inDepth, letterbox, 1);
 }
 
-extern "C" image process_image_realsense_explicit(int w, int h, int c, mat_cv *srcImg, mat_cv **inImg,
-                                                  const void *srcDepth, void **inDepth, int letterbox, int depthAsMat) {
+extern "C" image process_image_realsense_explicit(
+        int w, int h, int c, const mat_cv *const srcImg, mat_cv **inImg, const void *srcDepth, void **inDepth,
+        int letterbox, int depthAsMat) {
     auto src = (cv::Mat *) srcImg;
     image im;
     if (letterbox) {
@@ -892,7 +894,7 @@ image get_image_realsense_explicit(int w, int h, int c, mat_cv **in_img, void **
         error(errorBuffer);
     }
 
-    image im = process_image_realsense_explicit(w, h, c, (mat_cv * ) src, in_img, (void *) depth, in_depth,
+    image im = process_image_realsense_explicit(w, h, c, (mat_cv *) src, in_img, (void *) depth, in_depth,
                                                 letterbox, depthAsMat);
     /*
     printf("In image size = (%d x %d)\n", (*((cv::Mat **) in_img))->rows, (*((cv::Mat **) in_img))->cols);

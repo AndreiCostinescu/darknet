@@ -85,12 +85,13 @@ image get_image_from_stream_cpp(cap_cv *cap);
 image get_image_from_stream_resize(cap_cv *cap, int w, int h, int c, mat_cv **in_img, int dont_close);
 image get_image_from_stream_letterbox(cap_cv *cap, int w, int h, int c, mat_cv **in_img, int dont_close);
 #ifdef DARKNET_USE_REALSENSE
-image process_image_from_realsense(int w, int h, int c, mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
+image process_image_from_realsense(int w, int h, int c, const mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
                                    void **inDepth, int letterbox);
-image process_image_realsense_explicit(int w, int h, int c, mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
+image process_image_realsense_explicit(int w, int h, int c, const mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
                                        void **inDepth, int letterbox, int depthAsMat);
 image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, void **in_depth, int letterbox);
-image get_image_realsense_explicit(int w, int h, int c, mat_cv **in_img, void **in_depth, int letterbox, int depthAsMat);
+image get_image_realsense_explicit(int w, int h, int c, mat_cv **in_img, void **in_depth, int letterbox,
+                                   int depthAsMat);
 void release_depth_frame(void **depth_frame);
 #endif
 
