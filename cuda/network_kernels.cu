@@ -32,10 +32,6 @@
 #include <darknet/layers/route_layer.h>
 #include <darknet/layers/shortcut_layer.h>
 
-//#ifdef DARKNET_USE_OPENCV
-//#include <opencv2/highgui/highgui_c.h>
-//#endif
-
 #include <darknet/images/http_stream.h>
 
 float *get_network_output_gpu_layer(network net, int i);

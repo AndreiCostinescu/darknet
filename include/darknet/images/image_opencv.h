@@ -84,17 +84,10 @@ int set_capture_position_frame_cv(cap_cv *cap, int index);
 image get_image_from_stream_cpp(cap_cv *cap);
 image get_image_from_stream_resize(cap_cv *cap, int w, int h, int c, mat_cv **in_img, int dont_close);
 image get_image_from_stream_letterbox(cap_cv *cap, int w, int h, int c, mat_cv **in_img, int dont_close);
-#ifdef DARKNET_USE_REALSENSE
-image process_image_from_realsense(int w, int h, int c, const mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
-                                   void **inDepth, int letterbox);
-image process_image_realsense_explicit(int w, int h, int c, const mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
+image process_image_and_depth(int w, int h, int c, const mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
+                              void **inDepth, int letterbox);
+image process_image_and_depth_explicit(int w, int h, int c, const mat_cv *srcImg, mat_cv **inImg, const void *srcDepth,
                                        void **inDepth, int letterbox, int depthAsMat);
-image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, void **in_depth, int letterbox);
-image get_image_realsense_explicit(int w, int h, int c, mat_cv **in_img, void **in_depth, int letterbox,
-                                   int depthAsMat);
-void release_depth_frame(void **depth_frame);
-#endif
-
 
 // Image Saving
 void save_cv_png(mat_cv *img, const char *name);
@@ -103,11 +96,8 @@ void save_cv_jpg(mat_cv *img, const char *name);
 // Draw Detection
 void draw_detections_cv_v3(mat_cv **show_img, detection *detections, int num, float thresh, char **names,
                            image **alphabet, int classes, int printDetections);
-void draw_detections_cv_depth(mat_cv **show_img, void **show_depth, detection *detections, int num, float thresh,
-                              char **names, image **alphabet, int classes, int printDetections);
-void draw_detections_cv_depth_explicit(mat_cv **show_img, void **show_depth, detection *detections, int num,
-                                       float thresh, char **names, image **alphabet, int classes, int printDetections,
-                                       int depthAsMat);
+void draw_detections_cv_with_depth(mat_cv **show_img, detection *detections, int num, float thresh, char **names,
+                                   image **alphabet, int classes, int printDetections, void *getDepth);
 
 // Draw Loss & Accuracy chart
 mat_cv *draw_train_chart(char *windows_name, float max_img_loss, int max_batches, int number_of_lines, int img_size,

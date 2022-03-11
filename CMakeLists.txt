@@ -36,11 +36,13 @@ list(REMOVE_ITEM sources_src_cpp ${CMAKE_CURRENT_LIST_DIR}/src/yolo_console_dll.
 SET(SOURCES_SRC ${sources_src_c} ${sources_src_cpp})
 
 file(GLOB sources_src_applications_c "${CMAKE_CURRENT_LIST_DIR}/src/applications/*.c")
+list(REMOVE_ITEM sources_src_applications_c ${CMAKE_CURRENT_LIST_DIR}/src/applications/demo_realsense.c)
 file(GLOB sources_src_applications_cpp "${CMAKE_CURRENT_LIST_DIR}/src/applications/*.cpp")
 SET(SOURCES_SRC_APPLICATIONS ${sources_src_applications_c} ${sources_src_applications_cpp})
 
 file(GLOB sources_src_images_c "${CMAKE_CURRENT_LIST_DIR}/src/images/*.c")
 file(GLOB sources_src_images_cpp "${CMAKE_CURRENT_LIST_DIR}/src/images/*.cpp")
+list(REMOVE_ITEM sources_src_images_cpp ${CMAKE_CURRENT_LIST_DIR}/src/images/image_opencv_realsense.cpp)
 SET(SOURCES_SRC_IMAGES ${sources_src_images_c} ${sources_src_images_cpp})
 
 file(GLOB sources_src_layers_c "${CMAKE_CURRENT_LIST_DIR}/src/layers/*.c")
@@ -55,6 +57,8 @@ file(GLOB sources_src_utils_cpp "${CMAKE_CURRENT_LIST_DIR}/src/utils/*.cpp")
 SET(SOURCES_SRC_UTILS ${sources_src_utils_c} ${sources_src_utils_cpp})
 
 SET(SOURCES ${SOURCES_SRC} ${SOURCES_SRC_APPLICATIONS} ${SOURCES_SRC_IMAGES} ${SOURCES_SRC_LAYERS} ${SOURCES_SRC_UTILS})
+
+SET(REALSENSE_SOURCES src/applications/demo_realsense.c src/images/image_opencv_realsense.cpp ${REALSENSE_SOURCES})
 
 ### Collect all cuda files
 
@@ -76,11 +80,13 @@ endif ()
 
 message("${SOURCES}")
 message("${CUDA_SOURCES}")
+message("${REALSENSE_SOURCES}")
 
 ### Set source files as c++/cpp files
 
 if (BUILD_AS_CPP)
     set_source_files_properties(${SOURCES} PROPERTIES LANGUAGE CXX)
+    set_source_files_properties(${REALSENSE_SOURCES} PROPERTIES LANGUAGE CXX)
 endif ()
 
 ### SET INCLUDE DIRECTORIES
@@ -102,6 +108,24 @@ if (BUILD_AS_CPP)
 endif ()
 set_target_properties(dark PROPERTIES OUTPUT_NAME "darknet")
 target_include_directories(dark PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cuda> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src> $<INSTALL_INTERFACE:${DARKNET_INSTALL_INCLUDE_DIR}> $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
+
+### TARGET DARK_REALSENSE ###
+
+if (ENABLE_REALSENSE)
+    add_library(dark_realsense ${REALSENSE_SOURCES})
+    set_target_properties(dark_realsense PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    if (ENABLE_CUDA)
+        set_target_properties(dark_realsense PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    endif ()
+    if (BUILD_SHARED_LIBS)
+        target_compile_definitions(dark_realsense PRIVATE LIB_EXPORTS=1)
+    endif ()
+    if (BUILD_AS_CPP)
+        set_target_properties(dark_realsense PROPERTIES LINKER_LANGUAGE CXX)
+    endif ()
+    set_target_properties(dark_realsense PROPERTIES OUTPUT_NAME "darknet_realsense")
+    target_include_directories(dark_realsense PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cuda> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src> $<INSTALL_INTERFACE:${DARKNET_INSTALL_INCLUDE_DIR}> $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
+endif ()
 
 ### TARGET uselib_track ###
 

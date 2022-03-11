@@ -1919,9 +1919,6 @@ void draw_object(char *datacfg, char *cfgfile, char *weightfile, char *filename,
 #endif // defined(DARKNET_USE_OPENCV) && defined(GPU)
 
 void run_detector(int argc, char **argv) {
-    int use_realsense = find_arg(argc, argv, "-use_realsense");
-    int depth_as_rs_frame = find_arg(argc, argv, "-depth_as_rs_frame");
-    use_realsense += find_arg(argc, argv, "--use_realsense");
     int dont_show = find_arg(argc, argv, "-dont_show");
     int benchmark = find_arg(argc, argv, "-benchmark");
     int benchmark_layers = find_arg(argc, argv, "-benchmark_layers");
@@ -2016,7 +2013,7 @@ void run_detector(int argc, char **argv) {
                 if (filename[strlen(filename) - 1] == 0x0d) filename[strlen(filename) - 1] = 0;
         demo(cfg, weights, thresh, hier_thresh, cam_index, filename, names, classes, avgframes, frame_skip, prefix,
              out_filename, mjpeg_port, dontdraw_bbox, json_port, dont_show, ext_output, letter_box, time_limit_sec,
-             http_post_host, benchmark, benchmark_layers, use_realsense, !depth_as_rs_frame);
+             http_post_host, benchmark, benchmark_layers);
 
         free_list_contents_kvp(options);
         free_list(options);

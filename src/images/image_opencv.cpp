@@ -5,14 +5,15 @@
 
 #include <darknet/utils/utils.h>
 
+#include <algorithm>
+#include <atomic>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <functional>
+#include <fstream>
 #include <string>
 #include <vector>
-#include <fstream>
-#include <algorithm>
-#include <atomic>
 
 #include <opencv2/core/version.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -37,15 +38,6 @@
 #include <opencv2/imgproc/imgproc_c.h>
 #include <opencv2/core/types_c.h>
 #include <opencv2/core/version.hpp>
-#endif
-
-#ifdef DARKNET_USE_REALSENSE
-
-#include <librealsense2/rs.hpp>
-#include <librealsense2/rsutil.h>
-#include <exception>
-#include <darknet/images/realsense-opencv-helpers.hpp>
-
 #endif
 
 //using namespace cv;
@@ -806,14 +798,14 @@ extern "C" image get_image_from_stream_letterbox(cap_cv *cap, int w, int h, int 
 }
 // ----------------------------------------
 
-#ifdef DARKNET_USE_REALSENSE
-extern "C" image process_image_from_realsense(
+extern "C" image process_image_and_depth(
         int w, int h, int c, const mat_cv *const srcImg, mat_cv **inImg, const void *srcDepth, void **inDepth,
         int letterbox) {
-    return process_image_realsense_explicit(w, h, c, srcImg, inImg, srcDepth, inDepth, letterbox, 1);
+    return process_image_and_depth_explicit(w, h, c, srcImg, inImg, srcDepth, inDepth, letterbox, 1);
 }
+// ----------------------------------------
 
-extern "C" image process_image_realsense_explicit(
+extern "C" image process_image_and_depth_explicit(
         int w, int h, int c, const mat_cv *const srcImg, mat_cv **inImg, const void *srcDepth, void **inDepth,
         int letterbox, int depthAsMat) {
     auto src = (cv::Mat *) srcImg;
@@ -829,7 +821,7 @@ extern "C" image process_image_realsense_explicit(
         }
 
         if (c > 1) cv::cvtColor(*src, *src, cv::COLOR_RGB2BGR);
-        image tmp = mat_to_image(*src);
+        image tmp = mat_to_image_cv((mat_cv *) src);
         im = letterbox_image(tmp, w, h);
         free_image(tmp);
         release_mat((mat_cv **) &src);
@@ -844,84 +836,11 @@ extern "C" image process_image_realsense_explicit(
         cv::Mat new_img = cv::Mat(h, w, CV_8UC(c));
         cv::resize(*src, new_img, new_img.size(), 0, 0, cv::INTER_LINEAR);
         if (c > 1) cv::cvtColor(new_img, new_img, cv::COLOR_RGB2BGR);
-        im = mat_to_image(new_img);
+        im = mat_to_image_cv((mat_cv *) &new_img);
     }
     return im;
 }
-
-extern "C" image get_image_from_realsense(int w, int h, int c, mat_cv **in_img, void **in_depth, int letterbox) {
-    return get_image_realsense_explicit(w, h, c, in_img, in_depth, letterbox, 1);
-}
-
-image get_image_realsense_explicit(int w, int h, int c, mat_cv **in_img, void **in_depth, int letterbox,
-                                   int depthAsMat) {
-    c = c ? c : 3;
-    cv::Mat *src = 0, *depth = 0;
-    static int once = 1;
-    static rs2::pipeline pipe;
-    static rs2::align alignTo(RS2_STREAM_COLOR);
-    if (once) {
-        once = 0;
-        try {
-            pipe.start();
-        } catch (const rs2::error &e) {
-            printf("RealSense error calling %s (%s): %s\n", e.get_failed_function().c_str(),
-                   e.get_failed_args().c_str(), e.what());
-            error("RealSense error!\n");
-        }
-        printf("Started Realsense pipeline!\n");
-    }
-    try {
-        rs2::frameset currentFrame;
-        currentFrame = pipe.wait_for_frames();
-        currentFrame = alignTo.process(currentFrame);  // Make sure the frames are spatially aligned
-
-        if (depthAsMat) {
-            *in_depth = nullptr;
-            depth = new cv::Mat(depth_frame_to_meters(currentFrame.get_depth_frame()));
-        } else {
-            *in_depth = (void *) new rs2::depth_frame(currentFrame.get_depth_frame());
-        }
-        src = new cv::Mat(frame_to_mat(currentFrame.get_color_frame()));
-    } catch (const rs2::error &e) {
-        printf("RealSense error calling %s (%s): %s\n", e.get_failed_function().c_str(), e.get_failed_args().c_str(),
-               e.what());
-        error("RealSense error!\n");
-    } catch (std::exception &e) {
-        char errorBuffer[512];
-        strcat(errorBuffer, "Error in get_image_from_realsense while processing!\n");
-        strcat(errorBuffer, e.what());
-        error(errorBuffer);
-    }
-
-    image im = process_image_realsense_explicit(w, h, c, (mat_cv *) src, in_img, (void *) depth, in_depth,
-                                                letterbox, depthAsMat);
-    /*
-    printf("In image size = (%d x %d)\n", (*((cv::Mat **) in_img))->rows, (*((cv::Mat **) in_img))->cols);
-    if (depthAsMat) {
-        printf("In depth size = (%d x %d)\n", (*((cv::Mat **) in_depth))->rows, (*((cv::Mat **) in_depth))->cols);
-    }
-    //*/
-    return im;
-}
-
 // ----------------------------------------
-
-extern "C" void release_depth_frame(void **depth_frame) {
-    try {
-        rs2::depth_frame *rs2_depth_frame = (rs2::depth_frame *) (*depth_frame);
-        // printf("Releasing depth frame rs2_depth_frame %d\n", rs2_depth_frame);
-        if (rs2_depth_frame != 0) {
-            // printf("Content at (0, 0) is %f\n", rs2_depth_frame->get_distance(0, 0));
-        }
-        delete rs2_depth_frame;
-        *depth_frame = nullptr;
-    } catch (...) {
-        cerr << " OpenCV/Realsense exception: depth_frame " << depth_frame << " can't be released! \n";
-    }
-}
-// ----------------------------------------
-#endif
 
 // ====================================================================
 // Image Saving
@@ -962,28 +881,22 @@ extern "C" void save_cv_jpg(mat_cv *img_src, const char *name) {
 // ====================================================================
 extern "C" void draw_detections_cv_v3(mat_cv **mat, detection *detections, int num, float thresh,
                                       char **names, image **alphabet, int classes, int printDetections) {
-    draw_detections_cv_depth(mat, nullptr, detections, num, thresh, names, alphabet, classes, printDetections);
+    draw_detections_cv_with_depth(mat, detections, num, thresh, names, alphabet, classes, printDetections, 0);
 }
 // ----------------------------------------
 
-
-extern "C" void draw_detections_cv_depth(mat_cv **mat, void **depth_mat, detection *detections, int num, float thresh,
-                                         char **names, image **alphabet, int classes, int printDetections) {
-    draw_detections_cv_depth_explicit(mat, depth_mat, detections, num, thresh, names, alphabet, classes,
-                                      printDetections, 1);
-}
-
-extern "C" void draw_detections_cv_depth_explicit(
-        mat_cv **mat, void **depth_mat, detection *detections, int num, float thresh, char **names, image **alphabet,
-        int classes, int printDetections, int depthAsMat) {
+extern "C" void draw_detections_cv_with_depth(
+        mat_cv **mat, detection *detections, int num, float thresh, char **names, image **alphabet,
+        int classes, int printDetections, void *_getDepth) {
     // printf("Entering draw_detections_cv_depth_explicit\n");
-    int use_depth = (depth_mat != nullptr && (*depth_mat) != nullptr);
+    int use_depth = (_getDepth != nullptr);
+    auto *getDepth = (std::function<double(int, int, int, int)> *) _getDepth;
     // printf("draw_detections: Using depth? %d\n", use_depth);
     try {
         if (mat == nullptr) {
             return;
         }
-        cv::Mat *show_img = (cv::Mat *) (*mat);
+        auto *show_img = (cv::Mat *) (*mat);
         // printf("draw_detections: ShowImg = %d\n", show_img);
         int i, j;
         if (!show_img) return;
@@ -1023,7 +936,7 @@ extern "C" void draw_detections_cv_depth_explicit(
                 }
             }
             if (class_id >= 0) {
-                int width = std::max(1.0f, (float) show_img->rows * .002f);
+                int width = (int) std::max(1.0f, (float) show_img->rows * .002f);
 
                 int offset = class_id * 123457 % classes;
                 float red = get_color(2, offset, classes);
@@ -1050,31 +963,15 @@ extern "C" void draw_detections_cv_depth_explicit(
                 if (top < 0) top = 0;
                 if (bot > show_img->rows - 1) bot = show_img->rows - 1;
 
-                float depth = 0.0;
+                double depth = 0.0;
                 int box_x_center = (left + right) / 2;
                 int box_y_center = (top + bot) / 2;
                 int scaled_x_center = 0;
                 int scaled_y_center = 0;
                 if (use_depth) {
-                    if (depthAsMat) {
-                        const auto *show_depth = (cv::Mat *) (*depth_mat);
-                        scaled_x_center = (int) (((float) box_x_center) / (float) show_img->cols *
-                                                 (float) show_depth->cols);
-                        scaled_y_center = (int) (((float) box_y_center) / (float) show_img->rows *
-                                                 (float) show_depth->rows);
-                        depth = (float) show_depth->at<double>(scaled_y_center, scaled_x_center);
-                        if (depth < 0.1 || depth > 10) {
-                            depth = -1;
-                        }
-                    } else {
-#ifdef DARKNET_USE_REALSENSE
-                        const auto *show_depth = (const rs2::depth_frame *) (*depth_mat);
-                        scaled_x_center = box_x_center;
-                        scaled_y_center = box_y_center;
-                        float point3d[3];
-                        getRealsense3DPoint(*show_depth, scaled_x_center, scaled_y_center, point3d);
-                        depth = point3d[2];
-#endif
+                    depth = (*getDepth)(box_x_center, box_y_center, show_img->rows, show_img->cols);
+                    if (depth < 0.1 || depth > 10) {
+                        depth = -1;
                     }
                     char buff[40];
                     sprintf(buff, "; depth = %.2fm", depth);
@@ -1092,7 +989,7 @@ extern "C" void draw_detections_cv_depth_explicit(
                 pt_text.x = left;
                 pt_text.y = top - 4;// 12;
                 pt_text_bg1.x = left;
-                pt_text_bg1.y = (float) top - (3 + 18 * font_size);
+                pt_text_bg1.y = (int) ((float) top - (3 + 18 * font_size));
                 pt_text_bg2.x = right;
                 if ((right - left) < text_size.width) pt_text_bg2.x = left + text_size.width;
                 pt_text_bg2.y = top;
@@ -1131,6 +1028,7 @@ extern "C" void draw_detections_cv_depth_explicit(
     }
 }
 // ----------------------------------------
+
 
 // ====================================================================
 // Draw Loss & Accuracy chart
