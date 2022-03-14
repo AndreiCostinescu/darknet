@@ -908,30 +908,30 @@ extern "C" void draw_detections_cv_with_depth(
             char labelString[4096] = {0};
             int class_id = -1;
             for (j = 0; j < classes; ++j) {
-                int show = strncmp(names[j], "dont_show", 9);
-                if (detections[i].prob[j] > thresh && show) {
-                    if (class_id < 0) {
-                        strcat(labelString, names[j]);
-                        class_id = j;
-                        char buff[20];
-                        if (detections[i].track_id) {
-                            sprintf(buff, " (id: %d)", detections[i].track_id);
-                            strcat(labelString, buff);
-                        }
-                        sprintf(buff, " (%2.0f%%)", detections[i].prob[j] * 100);
+                if (names[j] == NULL || strncmp(names[j], "dont_show", 9) == 0 || detections[i].prob[j] <= thresh) {
+                    continue;
+                }
+                if (class_id < 0) {
+                    strcat(labelString, names[j]);
+                    class_id = j;
+                    char buff[20];
+                    if (detections[i].track_id) {
+                        sprintf(buff, " (id: %d)", detections[i].track_id);
                         strcat(labelString, buff);
-                        if (printDetections) {
-                            printf("%s: %.0f%% ", names[j], detections[i].prob[j] * 100);
-                            if (detections[i].track_id) {
-                                printf("(track = %d, sim = %f) ", detections[i].track_id, detections[i].sim);
-                            }
+                    }
+                    sprintf(buff, " (%2.0f%%)", detections[i].prob[j] * 100);
+                    strcat(labelString, buff);
+                    if (printDetections) {
+                        printf("%s: %.0f%% ", names[j], detections[i].prob[j] * 100);
+                        if (detections[i].track_id) {
+                            printf("(track = %d, sim = %f) ", detections[i].track_id, detections[i].sim);
                         }
-                    } else {
-                        strcat(labelString, ", ");
-                        strcat(labelString, names[j]);
-                        if (printDetections) {
-                            printf(", %s: %.0f%% ", names[j], detections[i].prob[j] * 100);
-                        }
+                    }
+                } else {
+                    strcat(labelString, ", ");
+                    strcat(labelString, names[j]);
+                    if (printDetections) {
+                        printf(", %s: %.0f%% ", names[j], detections[i].prob[j] * 100);
                     }
                 }
             }
