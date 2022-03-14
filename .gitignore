@@ -14,8 +14,9 @@ data/
 caffe/
 grasp/
 
+!./include/
 images/
-!include/images/
+!include/darknet/images/
 !src/images/
 
 opencv/
@@ -57,10 +58,10 @@ src/version.h
 # Build artifacts
 lib/
 share/
-# include/darknet/
 uselib
 uselib_track
 darknet
+!include/darknet
 
 .idea*
 cmake-*
