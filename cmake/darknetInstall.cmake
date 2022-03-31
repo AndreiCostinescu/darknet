@@ -39,6 +39,9 @@ message("HELLO WORLD!")
 export(PACKAGE Darknet)
 message("HELLO, HELLO WORLD!!!")
 
+configure_file("cmake/cmakeUninstall.cmake" "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake" IMMEDIATE @ONLY)
+
+
 # Create the DarknetConfig.cmake
 # First of all we compute the relative path between the cmake config file and the include path
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
