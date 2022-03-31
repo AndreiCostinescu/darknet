@@ -43,12 +43,12 @@ configure_file("cmake/cmakeUninstall.cmake" "${CMAKE_CURRENT_BINARY_DIR}/cmake_u
 
 
 # Create the DarknetConfig.cmake
-# First of all we compute the relative path between the cmake config file and the include path
-file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
-set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
-configure_file(DarknetConfig.cmake.in "${PROJECT_BINARY_DIR}/DarknetConfig.cmake" @ONLY)
-set(CONF_INCLUDE_DIRS "\${Darknet_CMAKE_DIR}/${REL_INCLUDE_DIR}")
-configure_file(DarknetConfig.cmake.in "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DarknetConfig.cmake" @ONLY)
+## First of all we compute the relative path between the cmake config file and the include path
+#file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}" "${INSTALL_INCLUDE_DIR}")
+#set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
+#configure_file(DarknetConfig.cmake.in "${PROJECT_BINARY_DIR}/DarknetConfig.cmake" @ONLY)
+#set(CONF_INCLUDE_DIRS "\${Darknet_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+configure_file(cmake/DarknetConfig.cmake.in "${PROJECT_BINARY_DIR}/DarknetConfig.cmake" @ONLY)
 
 # Create the DarknetConfigVersion.cmake
 include(CMakePackageConfigHelpers)
@@ -57,7 +57,7 @@ write_basic_package_version_file("${PROJECT_BINARY_DIR}/DarknetConfigVersion.cma
         )
 
 install(FILES
-        "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/DarknetConfig.cmake"
+        "${PROJECT_BINARY_DIR}/DarknetConfig.cmake"
         "${PROJECT_BINARY_DIR}/DarknetConfigVersion.cmake"
-        DESTINATION "${INSTALL_CMAKE_DIR}"
+        DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
         )
