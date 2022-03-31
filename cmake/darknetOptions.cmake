@@ -42,14 +42,15 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif ()
 
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/.." CACHE PATH "Install prefix" FORCE)
-endif ()
-
-set(INSTALL_BIN_DIR "${CMAKE_CURRENT_LIST_DIR}/.." CACHE PATH "Path where exe and dll will be installed")
-set(INSTALL_LIB_DIR "${CMAKE_CURRENT_LIST_DIR}/.." CACHE PATH "Path where lib will be installed")
-set(INSTALL_INCLUDE_DIR "include/darknet" CACHE PATH "Path where headers will be installed")
-set(INSTALL_CMAKE_DIR "share/darknet" CACHE PATH "Path where cmake configs will be installed")
+#if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+#    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_LIST_DIR}/.." CACHE PATH "Install prefix" FORCE)
+#endif ()
+#
+#set(INSTALL_BIN_DIR "${CMAKE_CURRENT_LIST_DIR}/.." CACHE PATH "Path where exe and dll will be installed")
+#set(INSTALL_LIB_DIR "${CMAKE_CURRENT_LIST_DIR}/.." CACHE PATH "Path where lib will be installed")
+#set(INSTALL_INCLUDE_DIR "include/darknet" CACHE PATH "Path where headers will be installed")
+#set(INSTALL_CMAKE_DIR "share/darknet" CACHE PATH "Path where cmake configs will be installed")
+#set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE PATH "Path where cmake configs will be installed")
 
 if (UNIX)
     include(CheckLanguage)

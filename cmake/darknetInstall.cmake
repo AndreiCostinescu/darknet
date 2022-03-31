@@ -7,31 +7,48 @@ add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/c
 include(CMakePackageConfigHelpers)
 
 #set_target_properties(dark PROPERTIES PUBLIC_HEADER "${exported_headers};${CMAKE_CURRENT_LIST_DIR}/include/yolo_v2_class.hpp")
-set_target_properties(dark PROPERTIES PUBLIC_HEADER
-        "${CMAKE_CURRENT_LIST_DIR}/../include/darknet/darknet.h;${CMAKE_CURRENT_LIST_DIR}/../include/darknet/yolo_v2_class.hpp")
+#set_target_properties(dark PROPERTIES PUBLIC_HEADER
+#        "${CMAKE_CURRENT_LIST_DIR}/../include/darknet/darknet.h;${CMAKE_CURRENT_LIST_DIR}/../include/darknet/yolo_v2_class.hpp")
+#set_target_properties(dark_realsense PROPERTIES PUBLIC_HEADER
+#        "${CMAKE_CURRENT_LIST_DIR}/../include/darknet/darknet.h;${CMAKE_CURRENT_LIST_DIR}/../include/darknet/yolo_v2_class.hpp")
 
 # set_target_properties(dark PROPERTIES CXX_VISIBILITY_PRESET hidden)
+set(PROJECT_INCLUDE_PREFIX darknet)
 
-install(TARGETS dark EXPORT DarknetTargets
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}"
-        ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
-        PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}"
+# install include files
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/${PROJECT_INCLUDE_PREFIX}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        )
+
+install(TARGETS dark
+        EXPORT DarknetTargets
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_INCLUDE_PREFIX}"
+        COMPONENT dev
+        )
+install(TARGETS dark_realsense
+        EXPORT DarknetTargets
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_INCLUDE_PREFIX}"
         COMPONENT dev
         )
 install(TARGETS uselib darknet
-        DESTINATION "${INSTALL_BIN_DIR}"
+        DESTINATION "${CMAKE_INSTALL_BINDIR}"
         )
 if (OpenCV_FOUND AND OpenCV_VERSION VERSION_GREATER "3.0" AND BUILD_USELIB_TRACK)
     install(TARGETS uselib_track
-            DESTINATION "${INSTALL_BIN_DIR}"
+            DESTINATION "${CMAKE_INSTALL_BINDIR}"
             )
 endif ()
 
 install(EXPORT DarknetTargets
         FILE DarknetTargets.cmake
         NAMESPACE Darknet::
-        DESTINATION "${INSTALL_CMAKE_DIR}"
+        DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
         )
 
 message("HELLO WORLD!")

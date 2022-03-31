@@ -10,8 +10,6 @@ project(Darknet VERSION ${Darknet_VERSION})
 
 include(cmake/darknetOptions.cmake)
 
-set(DARKNET_INSTALL_INCLUDE_DIR ${INSTALL_INCLUDE_DIR})
-
 ### Make relative paths absolute (needed later on)
 
 foreach (p LIB BIN INCLUDE CMAKE)
@@ -107,7 +105,12 @@ if (BUILD_AS_CPP)
     set_target_properties(dark PROPERTIES LINKER_LANGUAGE CXX)
 endif ()
 set_target_properties(dark PROPERTIES OUTPUT_NAME "darknet")
-target_include_directories(dark PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cuda> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src> $<INSTALL_INTERFACE:${DARKNET_INSTALL_INCLUDE_DIR}> $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
+target_include_directories(dark PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cuda>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
 
 ### TARGET DARK_REALSENSE ###
 
@@ -124,7 +127,12 @@ if (ENABLE_REALSENSE)
         set_target_properties(dark_realsense PROPERTIES LINKER_LANGUAGE CXX)
     endif ()
     set_target_properties(dark_realsense PROPERTIES OUTPUT_NAME "darknet_realsense")
-    target_include_directories(dark_realsense PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cuda> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src> $<INSTALL_INTERFACE:${DARKNET_INSTALL_INCLUDE_DIR}> $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
+    target_include_directories(dark_realsense PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cuda>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
+            $<INSTALL_INTERFACE:include>
+            $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
 endif ()
 
 ### TARGET uselib_track ###
@@ -139,7 +147,12 @@ add_executable(uselib ${CMAKE_CURRENT_LIST_DIR}/src/yolo_console_dll.cpp)
 if (BUILD_AS_CPP)
     set_target_properties(uselib PROPERTIES LINKER_LANGUAGE CXX)
 endif ()
-target_include_directories(uselib PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cuda> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src> $<INSTALL_INTERFACE:${DARKNET_INSTALL_INCLUDE_DIR}> $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
+target_include_directories(uselib PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cuda>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
 
 ### TARGET DARKNET ###
 
@@ -148,7 +161,12 @@ if (BUILD_AS_CPP)
     set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/src/darknet.c PROPERTIES LANGUAGE CXX)
     set_target_properties(darknet PROPERTIES LINKER_LANGUAGE CXX)
 endif ()
-target_include_directories(darknet PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cuda> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include> $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src> $<INSTALL_INTERFACE:${DARKNET_INSTALL_INCLUDE_DIR}> $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
+target_include_directories(darknet PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cuda>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
+        $<INSTALL_INTERFACE:include>
+        $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
 
 ### FINAL THINGS: link libraries
 
