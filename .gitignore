@@ -66,4 +66,5 @@ darknet
 .idea*
 cmake-*
 cuda-build*
+build-*
 
