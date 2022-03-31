@@ -1,3 +1,11 @@
+include(GNUInstallDirs)
+
+set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+
+add_custom_target(uninstall "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+
+include(CMakePackageConfigHelpers)
+
 #set_target_properties(dark PROPERTIES PUBLIC_HEADER "${exported_headers};${CMAKE_CURRENT_LIST_DIR}/include/yolo_v2_class.hpp")
 set_target_properties(dark PROPERTIES PUBLIC_HEADER
         "${CMAKE_CURRENT_LIST_DIR}/../include/darknet/darknet.h;${CMAKE_CURRENT_LIST_DIR}/../include/darknet/yolo_v2_class.hpp")
