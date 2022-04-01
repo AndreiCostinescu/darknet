@@ -55,7 +55,7 @@ void col2im_ongpu(float *data_col,
 
     CHECK_CUDA(cudaPeekAtLastError());
 }
-// -----------------------------------------
+
 
 // CUDA: use 512 threads per block
 const int CAFFE_CUDA_NUM_THREADS = 512;

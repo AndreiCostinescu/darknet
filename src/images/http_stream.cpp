@@ -272,7 +272,7 @@ class JSON_sender {
         return true;
     }
 };
-// ----------------------------------------
+
 
 static std::unique_ptr<JSON_sender> js_ptr;
 static std::mutex mtx;

@@ -40,7 +40,6 @@ void col2im_cpu(float *data_col,
     }
 }
 
-// ----------------------------------------
 void caffe_set(const int N, const float alpha, float *Y) {
     if (alpha == 0) {
         memset(Y, 0, sizeof(float) * N);  // NOLINT(caffe/alt_fn)

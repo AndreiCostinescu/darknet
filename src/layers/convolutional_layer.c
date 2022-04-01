@@ -301,8 +301,7 @@ void cudnn_convolutional_setup(layer *l, int cudnn_preference, size_t workspace_
 
 #if CUDNN_MAJOR >= 8
 
-    if (cudnn_preference == cudnn_smallest)
-    {
+    if (cudnn_preference == cudnn_smallest) {
         workspace_size_specify = 0;
     }
 
@@ -316,26 +315,24 @@ void cudnn_convolutional_setup(layer *l, int cudnn_preference, size_t workspace_
     CHECK_CUDNN(cudnnGetConvolutionForwardAlgorithmMaxCount(cudnn_handle(), &requested_algo_count));
 
     CHECK_CUDNN(cudnnGetConvolutionForwardAlgorithm_v7(cudnn_handle(),
-        l->srcTensorDesc,
-        l->weightDesc,
-        l->convDesc,
-        l->dstTensorDesc,
-        requested_algo_count, // (cudnnConvolutionFwdPreference_t)forward_algo,
-        &returned_algo_count, // workspace_size_specify,
-        conv_fwd_results));
+                                                       l->srcTensorDesc,
+                                                       l->weightDesc,
+                                                       l->convDesc,
+                                                       l->dstTensorDesc,
+                                                       requested_algo_count, // (cudnnConvolutionFwdPreference_t)forward_algo,
+                                                       &returned_algo_count, // workspace_size_specify,
+                                                       conv_fwd_results));
 
     CHECK_CUDA(cudaMemGetInfo(&free_memory, &total_memory));
 
     found_conv_algorithm = 0;
     min_time = 1000000;   // 1000 sec
-    for (int i = 0; i < returned_algo_count; i++)
-    {
+    for (int i = 0; i < returned_algo_count; i++) {
         if (conv_fwd_results[i].status == CUDNN_STATUS_SUCCESS &&
             conv_fwd_results[i].algo != CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED &&
             conv_fwd_results[i].memory < free_memory &&
             (conv_fwd_results[i].memory <= workspace_size_specify || cudnn_preference == cudnn_fastest) &&
-            conv_fwd_results[i].time < min_time)
-        {
+            conv_fwd_results[i].time < min_time) {
             found_conv_algorithm = 1;
             l->fw_algo = conv_fwd_results[i].algo;
             min_time = conv_fwd_results[i].time;
@@ -355,25 +352,23 @@ void cudnn_convolutional_setup(layer *l, int cudnn_preference, size_t workspace_
     CHECK_CUDNN(cudnnGetConvolutionBackwardDataAlgorithmMaxCount(cudnn_handle(), &requested_algo_count));
 
     CHECK_CUDNN(cudnnGetConvolutionBackwardDataAlgorithm_v7(cudnn_handle(),
-        l->weightDesc,
-        l->ddstTensorDesc,
-        l->convDesc,
-        l->dsrcTensorDesc,
-        requested_algo_count, // (cudnnConvolutionFwdPreference_t)forward_algo,
-        &returned_algo_count, // workspace_size_specify,
-        &conv_bwd_data_results[0]));
+                                                            l->weightDesc,
+                                                            l->ddstTensorDesc,
+                                                            l->convDesc,
+                                                            l->dsrcTensorDesc,
+                                                            requested_algo_count, // (cudnnConvolutionFwdPreference_t)forward_algo,
+                                                            &returned_algo_count, // workspace_size_specify,
+                                                            &conv_bwd_data_results[0]));
 
     CHECK_CUDA(cudaMemGetInfo(&free_memory, &total_memory));
 
     found_conv_algorithm = 0;
     min_time = 1000000;   // 1000 sec
-    for (int i = 0; i < returned_algo_count; i++)
-    {
+    for (int i = 0; i < returned_algo_count; i++) {
         if (conv_bwd_data_results[i].status == CUDNN_STATUS_SUCCESS &&
             conv_bwd_data_results[i].memory < free_memory &&
             (conv_bwd_data_results[i].memory <= workspace_size_specify || cudnn_preference == cudnn_fastest) &&
-            conv_bwd_data_results[i].time < min_time)
-        {
+            conv_bwd_data_results[i].time < min_time) {
             found_conv_algorithm = 1;
             l->bd_algo = conv_bwd_data_results[i].algo;
             min_time = conv_bwd_data_results[i].time;
@@ -392,25 +387,23 @@ void cudnn_convolutional_setup(layer *l, int cudnn_preference, size_t workspace_
     CHECK_CUDNN(cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnn_handle(), &requested_algo_count));
 
     CHECK_CUDNN(cudnnGetConvolutionBackwardFilterAlgorithm_v7(cudnn_handle(),
-        l->srcTensorDesc,
-        l->ddstTensorDesc,
-        l->convDesc,
-        l->dweightDesc,
-        requested_algo_count, // (cudnnConvolutionFwdPreference_t)forward_algo,
-        &returned_algo_count, // workspace_size_specify,
-        &conv_bwd_filter_results[0]));
+                                                              l->srcTensorDesc,
+                                                              l->ddstTensorDesc,
+                                                              l->convDesc,
+                                                              l->dweightDesc,
+                                                              requested_algo_count, // (cudnnConvolutionFwdPreference_t)forward_algo,
+                                                              &returned_algo_count, // workspace_size_specify,
+                                                              &conv_bwd_filter_results[0]));
 
     CHECK_CUDA(cudaMemGetInfo(&free_memory, &total_memory));
 
     found_conv_algorithm = 0;
     min_time = 1000000;   // 1000 sec
-    for (int i = 0; i < returned_algo_count; i++)
-    {
+    for (int i = 0; i < returned_algo_count; i++) {
         if (conv_bwd_filter_results[i].status == CUDNN_STATUS_SUCCESS &&
             conv_bwd_filter_results[i].memory < free_memory &&
             (conv_bwd_filter_results[i].memory <= workspace_size_specify || cudnn_preference == cudnn_fastest) &&
-            conv_bwd_filter_results[i].time < min_time)
-        {
+            conv_bwd_filter_results[i].time < min_time) {
             found_conv_algorithm = 1;
             l->bf_algo = conv_bwd_filter_results[i].algo;
             min_time = conv_bwd_filter_results[i].time;
@@ -1104,17 +1097,17 @@ void bit_to_float(unsigned char *src, float *dst, size_t size, size_t filters, f
 void binary_align_weights(convolutional_layer *l) {
     int m = l->n;   // (l->n / l->groups)
     int k = l->size * l->size * l->c;   // ->size*l->size*(l->c / l->groups)
-    size_t new_lda = k + (l->lda_align - k % l->lda_align); // (k / 8 + 1) * 8;
+    int new_lda = k + (l->lda_align - k % l->lda_align); // (k / 8 + 1) * 8;
     l->new_lda = new_lda;
 
     binarize_weights(l->weights, m, k, l->binary_weights);
 
-    size_t align_weights_size = new_lda * m;
+    int align_weights_size = new_lda * m;
     l->align_bit_weights_size = align_weights_size / 8 + 1;
     float *align_weights = (float *) xcalloc(align_weights_size, sizeof(float));
     l->align_bit_weights = (char *) xcalloc(l->align_bit_weights_size, sizeof(char));
 
-    size_t i, j;
+    int i, j;
     // align A without transpose
     for (i = 0; i < m; ++i) {
         for (j = 0; j < k; ++j) {
@@ -1160,7 +1153,9 @@ void binary_align_weights(convolutional_layer *l) {
             //int N = l->out_w*l->out_h;
             //printf("\n M = %d, N = %d, M %% 8 = %d, N %% 8 = %d - weights \n", M, N, M % 8, N % 8);
             //printf("\n l.w = %d, l.c = %d, l.n = %d \n", l->w, l->c, l->n);
-            for (i = 0; i < align_weights_size / 8; ++i) l->align_bit_weights[i] = ~(l->align_bit_weights[i]);
+            for (i = 0; i < align_weights_size / 8; ++i) {
+                l->align_bit_weights[i] = ~(l->align_bit_weights[i]);
+            }
         }
 
 

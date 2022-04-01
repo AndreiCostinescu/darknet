@@ -992,7 +992,6 @@ typedef struct box_label {
 //    node *front;
 //    node *back;
 //} list;
-// -----------------------------------------------------
 
 
 // parser.c

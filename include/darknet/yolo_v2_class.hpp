@@ -225,7 +225,6 @@ public:
         return true;
     }
 };
-// --------------------------------------------------------------------------------
 
 
 #if defined(TRACK_OPTFLOW) && defined(DARKNET_USE_OPENCV) && defined(GPU)
@@ -846,7 +845,6 @@ public:
             initialize_kalman();
         }
     };
-    // ------------------------------------------
 
 
 
@@ -1044,7 +1042,7 @@ public:
     }
 
 };
-// ----------------------------------------------
+
 #endif    // DARKNET_USE_OPENCV
 
 #endif    // __cplusplus
