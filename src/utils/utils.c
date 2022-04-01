@@ -32,6 +32,8 @@
 #pragma warning(disable: 4996)
 #endif
 
+int check_mistakes = 0;
+
 void *xmalloc(size_t size) {
     void *ptr = malloc(size);
     if (!ptr) {

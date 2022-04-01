@@ -92,6 +92,14 @@ typedef struct network_state {
 */
 
 #ifdef GPU
+typedef struct time_benchmark_layers {
+    float time;
+    int layer_id;
+    LAYER_TYPE layer_type;
+} time_benchmark_layers;
+
+int time_comparator(const void *pa, const void *pb);
+
 float train_networks(network *nets, int n, data d, int interval);
 void sync_nets(network *nets, int n, int interval);
 float train_network_datum_gpu(network net, float *x, float *y);
@@ -120,7 +128,6 @@ void backward_network(network net, network_state state);
 void update_network(network net);
 
 float train_network(network net, data d);
-float train_network_waitkey(network net, data d, int wait_key);
 float train_network_batch(network net, data d, int n);
 float train_network_sgd(network net, data d, int n);
 float train_network_datum(network net, float *x, float *y);
@@ -142,7 +149,6 @@ image get_network_image(network net);
 image get_network_image_layer(network net, int i);
 int get_predicted_class_network(network net);
 void print_network(network net);
-void visualize_network(network net);
 int resize_network_verbose(network *net, int w, int h, int verbose);
 int resize_network(network *net, int w, int h);
 void set_batch_network(network *net, int b);

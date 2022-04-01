@@ -25,65 +25,24 @@ static inline float distance_from_edge(int x, int max) {
     return dist;
 }
 
-//typedef struct{
-//    int w, h;
-//    matrix X;
-//    matrix y;
-//    int shallow;
-//    int *num_boxes;
-//    box **boxes;
-//} data;
+char **get_sequential_paths(char **paths, int n, int m, int mini_batch, int augment_speed, int contrastive);
 
-//typedef enum {
-//    CLASSIFICATION_DATA, DETECTION_DATA, CAPTCHA_DATA, REGION_DATA, IMAGE_DATA, LETTERBOX_DATA, COMPARE_DATA, WRITING_DATA, SWAG_DATA, TAG_DATA, OLD_CLASSIFICATION_DATA, STUDY_DATA, DET_DATA, SUPER_DATA
-//} data_type;
-/*
-typedef struct load_args{
-    int threads;
-    char **paths;
-    char *path;
-    int n;
-    int m;
-    char **labels;
-    int h;
-    int w;
-	int c; // color depth
-	int out_w;
-    int out_h;
-    int nh;
-    int nw;
-    int num_boxes;
-    int min, max, size;
-    int classes;
-    int background;
-    int scale;
-	int small_object;
-    float jitter;
-    int flip;
-    float angle;
-    float aspect;
-    float saturation;
-    float exposure;
-    float hue;
-    data *d;
-    image *im;
-    image *resized;
-    data_type type;
-    tree *hierarchy;
-} load_args;
+char **get_random_paths(char **paths, int n, int m);
 
-typedef struct{
-    int id;
-    float x,y,w,h;
-    float left, right, top, bottom;
-} box_label;
+char **get_random_paths_custom(char **paths, int n, int m, int contrastive);
 
-void free_data(data d);
+int fill_truth_detection(const char *path, int num_boxes, int truth_size, float *truth, int classes, int flip, float dx,
+                         float dy, float sx, float sy, int net_w, int net_h);
 
-pthread_t load_data(load_args args);
+matrix load_labels_paths(char **paths, int n, char **labels, int k, tree *hierarchy, float label_smooth_eps,
+                         int contrastive);
 
-pthread_t load_data_in_thread(load_args args);
-*/
+void blend_truth(float *new_truth, int boxes, int truth_size, float *old_truth);
+
+void blend_truth_mosaic(float *new_truth, int boxes, int truth_size, float *old_truth, int w, int h, float cut_x,
+                        float cut_y, int i_mixup, int left_shift, int right_shift, int top_shift, int bot_shift,
+                        int net_w, int net_h, int mosaic_bound);
+
 void print_letters(float *pred, int n);
 
 data load_data_captcha(char **paths, int n, int m, int k, int w, int h);

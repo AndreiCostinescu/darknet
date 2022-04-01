@@ -1528,25 +1528,6 @@ void assisted_excitation_forward(convolutional_layer l, network_state state) {
         }
     }
 
-    if (0)   // visualize ground truth
-    {
-#ifdef DARKNET_USE_OPENCV
-        for (b = 0; b < l.batch; ++b) {
-            image img = float_to_image(l.out_w, l.out_h, 1, &g[l.out_w * l.out_h * b]);
-            char buff[100];
-            sprintf(buff, "a_excitation_%d", b);
-            show_image_cv(img, buff);
-
-            image img2 = float_to_image(l.out_w, l.out_h, 1, &l.output[l.out_w * l.out_h * l.out_c * b]);
-            char buff2[100];
-            sprintf(buff2, "a_excitation_act_%d", b);
-            show_image_cv(img2, buff2);
-            wait_key_cv(5);
-        }
-        wait_until_press_key_cv();
-#endif // DARKNET_USE_OPENCV
-    }
-
     free(g);
     free(a_avg);
 }
@@ -1665,35 +1646,5 @@ void rescale_weights(convolutional_layer l, float scale, float trans) {
             l.biases[i] += sum * trans;
         }
     }
-}
-
-image *get_weights(convolutional_layer l) {
-    image *weights = (image *) xcalloc(l.n, sizeof(image));
-    int i;
-    for (i = 0; i < l.n; ++i) {
-        weights[i] = copy_image(get_convolutional_weight(l, i));
-        normalize_image(weights[i]);
-        /*
-        char buff[256];
-        sprintf(buff, "filter%d", i);
-        save_image(weights[i], buff);
-        */
-    }
-    //error("hey");
-    return weights;
-}
-
-image *visualize_convolutional_layer(convolutional_layer l, char *window, image *prev_weights) {
-    image *single_weights = get_weights(l);
-    show_images(single_weights, l.n, window);
-
-    image delta = get_convolutional_image(l);
-    image dc = collapse_image_layers(delta, 1);
-    char buff[256];
-    sprintf(buff, "%s: Output", window);
-    show_image(dc, buff);
-    //save_image(dc, buff);
-    free_image(dc);
-    return single_weights;
 }
 

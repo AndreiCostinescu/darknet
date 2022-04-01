@@ -40,12 +40,6 @@ float *get_network_delta_gpu_layer(network net, int i);
 
 float *get_network_output_gpu(network net);
 
-typedef struct time_benchmark_layers {
-    float time;
-    int layer_id;
-    LAYER_TYPE layer_type;
-} time_benchmark_layers;
-
 int time_comparator(const void *pa, const void *pb) {
     time_benchmark_layers a = *(time_benchmark_layers *) pa;
     time_benchmark_layers b = *(time_benchmark_layers *) pb;
@@ -260,8 +254,7 @@ void backward_network_gpu(network net, network_state state) {
 
         image attention_img = make_attention_image(img_size, original_delta_cpu, original_input_cpu, net.w, net.h,
                                                    net.c);
-        show_image(attention_img, "attention_img");
-        resize_window_cv("attention_img", 500, 500);
+        save_image(attention_img, "attention_img");
 
         free_image(attention_img);
 
@@ -410,9 +403,7 @@ float train_network_datum_gpu(network net, float *x, float *y) {
         im.h = net.h;
         im.c = net.c;
         im.data = x;
-        show_image(im, "adversarial data augmentation");
-        resize_window_cv("adversarial data augmentation", 500, 500);
-        wait_key_cv(1);
+        save_image(im, "adversarial data augmentation");
 
         free(old_input);
         free(truth_cpu);

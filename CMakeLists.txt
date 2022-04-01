@@ -26,51 +26,123 @@ configure_file(
 
 ### Collect all source files
 
-file(GLOB sources_src_c "${CMAKE_CURRENT_LIST_DIR}/src/*.c")
-list(REMOVE_ITEM sources_src_c ${CMAKE_CURRENT_LIST_DIR}/src/darknet.c)  # only needed for executable and added explicitly there
-file(GLOB sources_src_cpp "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp")
-list(REMOVE_ITEM sources_src_cpp ${CMAKE_CURRENT_LIST_DIR}/src/yolo_v2_class.cpp)  # not needed for executable but for library
-list(REMOVE_ITEM sources_src_cpp ${CMAKE_CURRENT_LIST_DIR}/src/yolo_console_dll.cpp)  # needed only for uselib
-SET(SOURCES_SRC ${sources_src_c} ${sources_src_cpp})
+SET(SOURCES_SRC src/dark_cuda.c src/network.c)
 
-file(GLOB sources_src_applications_c "${CMAKE_CURRENT_LIST_DIR}/src/applications/*.c")
-list(REMOVE_ITEM sources_src_applications_c ${CMAKE_CURRENT_LIST_DIR}/src/applications/demo_realsense.c)
-file(GLOB sources_src_applications_cpp "${CMAKE_CURRENT_LIST_DIR}/src/applications/*.cpp")
-SET(SOURCES_SRC_APPLICATIONS ${sources_src_applications_c} ${sources_src_applications_cpp})
+SET(SOURCES_SRC_IMAGES src/images/image.c src/images/http_stream.cpp)
+SET(SOURCES_SRC_IMAGES_OPENCV src/images/image_opencv.cpp)
+SET(SOURCES_SRC_IMAGES_REALSENSE src/images/image_opencv_realsense.cpp)
 
-file(GLOB sources_src_images_c "${CMAKE_CURRENT_LIST_DIR}/src/images/*.c")
-file(GLOB sources_src_images_cpp "${CMAKE_CURRENT_LIST_DIR}/src/images/*.cpp")
-list(REMOVE_ITEM sources_src_images_cpp ${CMAKE_CURRENT_LIST_DIR}/src/images/image_opencv_realsense.cpp)
-SET(SOURCES_SRC_IMAGES ${sources_src_images_c} ${sources_src_images_cpp})
+SET(SOURCES_SRC_LAYERS
+        src/layers/activation_layer.c
+        src/layers/activations.c
+        src/layers/avgpool_layer.c
+        src/layers/batchnorm_layer.c
+        src/layers/box.c
+        src/layers/col2im.c
+        src/layers/connected_layer.c
+        src/layers/conv_lstm_layer.c
+        src/layers/convolutional_layer.c
+        src/layers/cost_layer.c
+        src/layers/crnn_layer.c
+        src/layers/crop_layer.c
+        src/layers/deconvolutional_layer.c
+        src/layers/detection_layer.c
+        src/layers/dropout_layer.c
+        src/layers/gaussian_yolo_layer.c
+        src/layers/gru_layer.c
+        src/layers/identity_layer.c
+        src/layers/im2col.c
+        src/layers/layer.c
+        src/layers/linear_layer.c
+        src/layers/local_layer.c
+        src/layers/lstm_layer.c
+        src/layers/maxpool_layer.c
+        src/layers/normalization_layer.c
+        src/layers/prelu_layer.c
+        src/layers/region_layer.c
+        src/layers/reorg_layer.c
+        src/layers/reorg_old_layer.c
+        src/layers/rnn_layer.c
+        src/layers/route_layer.c
+        src/layers/sam_layer.c
+        src/layers/scale_channels_layer.c
+        src/layers/shortcut_layer.c
+        src/layers/softmax_layer.c
+        src/layers/upsample_layer.c
+        src/layers/yolo_layer.c
+        )
 
-file(GLOB sources_src_layers_c "${CMAKE_CURRENT_LIST_DIR}/src/layers/*.c")
-file(GLOB sources_src_layers_cpp "${CMAKE_CURRENT_LIST_DIR}/src/layers/*.cpp")
-SET(SOURCES_SRC_LAYERS ${sources_src_layers_c} ${sources_src_layers_cpp})
-
-file(GLOB sources_src_utils_c "${CMAKE_CURRENT_LIST_DIR}/src/utils/*.c")
-if (NOT WIN32)
-    list(REMOVE_ITEM sources_src_utils_c ${CMAKE_CURRENT_LIST_DIR}/src/utils/gettimeofday.c ${CMAKE_CURRENT_LIST_DIR}/src/utils/getopt.c)
+SET(SOURCES_SRC_UTILS
+        src/utils/blas.c
+        src/utils/cpu_gemm.c
+        src/utils/data.c
+        src/utils/gemm.c
+        src/utils/list.c
+        src/utils/matrix.c
+        src/utils/option_list.c
+        src/utils/parser.c
+        src/utils/tree.c
+        src/utils/utils.c
+        )
+if (WIN32)
+    set(SOURCES_SRC_UTILS src/utils/gettimeofday.c src/utils/getopt.c ${SOURCES_SRC_UTILS})
 endif ()
-file(GLOB sources_src_utils_cpp "${CMAKE_CURRENT_LIST_DIR}/src/utils/*.cpp")
-SET(SOURCES_SRC_UTILS ${sources_src_utils_c} ${sources_src_utils_cpp})
 
-SET(SOURCES ${SOURCES_SRC} ${SOURCES_SRC_APPLICATIONS} ${SOURCES_SRC_IMAGES} ${SOURCES_SRC_LAYERS} ${SOURCES_SRC_UTILS})
+SET(SOURCES ${SOURCES_SRC} ${SOURCES_SRC_IMAGES} ${SOURCES_SRC_LAYERS} ${SOURCES_SRC_UTILS})
 
 SET(REALSENSE_SOURCES src/applications/demo_realsense.c src/images/image_opencv_realsense.cpp ${REALSENSE_SOURCES})
+
+SET(OPENCV_SOURCES
+        src/darknet_opencv.c
+        src/network_opencv.c
+        src/layers/convolutional_layer_opencv.c
+        src/images/image_opencv.cpp src/images/http_stream_opencv.cpp
+        src/utils/data_opencv.c
+        ${OPENCV_SOURCES})
+
+SET(APPLICATION_SOURCES
+        src/applications/art.c
+        src/applications/captcha.c
+        src/applications/cifar.c
+        src/applications/classifier.c
+        src/applications/coco.c
+        src/applications/compare.c
+        src/applications/demo.c
+        src/applications/detector.c
+        src/applications/dice.c
+        src/applications/go.c
+        src/applications/nightmare.c
+        src/applications/rnn.c
+        src/applications/rnn_vid.c
+        src/applications/super.c
+        src/applications/swag.c
+        src/applications/tag.c
+        src/applications/voxel.c
+        src/applications/writing.c
+        src/applications/yolo.c
+        ${APPLICATION_SOURCES})
 
 ### Collect all cuda files
 
 if (ENABLE_CUDA)
-    file(GLOB cuda_sources_cuda_cu "${CMAKE_CURRENT_LIST_DIR}/cuda/*.cu")
-    SET(CUDA_SOURCES_CUDA ${cuda_sources_cuda_cu})
+    SET(CUDA_SOURCES_CUDA_LAYERS
+            cuda/layers/activation_kernels.cu
+            cuda/layers/avgpool_layer_kernels.cu
+            cuda/layers/col2im_kernels.cu
+            cuda/layers/convolutional_kernels.cu
+            cuda/layers/crop_layer_kernels.cu
+            cuda/layers/deconvolutional_kernels.cu
+            cuda/layers/dropout_layer_kernels.cu
+            cuda/layers/identity_layer_kernels.cu
+            cuda/layers/im2col_kernels.cu
+            cuda/layers/linear_layer_kernels.cu
+            cuda/layers/maxpool_layer_kernels.cu
+            cuda/layers/prelu_layer_kernels.cu
+            )
 
-    file(GLOB cuda_sources_cuda_layers_cu "${CMAKE_CURRENT_LIST_DIR}/cuda/layers/*.cu")
-    SET(CUDA_SOURCES_CUDA_LAYERS ${cuda_sources_cuda_layers_cu})
+    SET(CUDA_SOURCES cuda/network_kernels.cu cuda/utils/blas_kernels.cu ${CUDA_SOURCES_CUDA_LAYERS})
 
-    file(GLOB cuda_sources_cuda_utils_cu "${CMAKE_CURRENT_LIST_DIR}/cuda/utils/*.cu")
-    SET(CUDA_SOURCES_CUDA_UTILS ${cuda_sources_cuda_utils_cu})
-
-    SET(CUDA_SOURCES ${CUDA_SOURCES_CUDA} ${CUDA_SOURCES_CUDA_LAYERS} ${CUDA_SOURCES_CUDA_UTILS})
+    SET(CUDA_OPENCV_SOURCES cuda/utils/cuda_opencv.cu cuda/network_kernels_opencv.cu cuda/layers/convolutional_kernels_opencv.cu)
     message("WITH CUDA!!!")
 else ()
     message("NO CUDA!!!")
@@ -79,6 +151,8 @@ endif ()
 message("${SOURCES}")
 message("${CUDA_SOURCES}")
 message("${REALSENSE_SOURCES}")
+message("${OPENCV_SOURCES}")
+message("${APPLICATION_SOURCES}")
 
 ### Set source files as c++/cpp files
 
@@ -111,6 +185,29 @@ target_include_directories(dark PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
+
+### TARGET DARK_OPENCV ###
+
+if (ENABLE_OPENCV)
+    add_library(dark_opencv ${OPENCV_SOURCES} ${CUDA_OPENCV_SOURCES})
+    set_target_properties(dark_opencv PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    if (ENABLE_CUDA)
+        set_target_properties(dark_opencv PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    endif ()
+    if (BUILD_SHARED_LIBS)
+        target_compile_definitions(dark_opencv PRIVATE LIB_EXPORTS=1)
+    endif ()
+    if (BUILD_AS_CPP)
+        set_target_properties(dark_opencv PROPERTIES LINKER_LANGUAGE CXX)
+    endif ()
+    set_target_properties(dark_opencv PROPERTIES OUTPUT_NAME "darknet_opencv")
+    target_include_directories(dark_opencv PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cuda>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
+            $<INSTALL_INTERFACE:include>
+            $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
+endif ()
 
 ### TARGET DARK_REALSENSE ###
 
@@ -156,9 +253,9 @@ target_include_directories(uselib PUBLIC
 
 ### TARGET DARKNET ###
 
-add_executable(darknet ${CMAKE_CURRENT_LIST_DIR}/src/darknet.c ${SOURCES} ${CUDA_SOURCES})
+add_executable(darknet ${CMAKE_CURRENT_LIST_DIR}/src/darknet.c ${APPLICATION_SOURCES})
 if (BUILD_AS_CPP)
-    set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/src/darknet.c PROPERTIES LANGUAGE CXX)
+    set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/src/darknet.c ${APPLICATION_SOURCES} PROPERTIES LANGUAGE CXX)
     set_target_properties(darknet PROPERTIES LINKER_LANGUAGE CXX)
 endif ()
 target_include_directories(darknet PUBLIC
@@ -167,6 +264,22 @@ target_include_directories(darknet PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
+
+### TARGET DARKNET_OPENCV ###
+
+if (ENABLE_OPENCV)
+    add_executable(darknet_opencv ${CMAKE_CURRENT_LIST_DIR}/src/darknet_opencv.c ${APPLICATION_SOURCES})
+    if (BUILD_AS_CPP)
+        set_source_files_properties(${CMAKE_CURRENT_LIST_DIR}/src/darknet_opencv.c ${APPLICATION_SOURCES} PROPERTIES LANGUAGE CXX)
+        set_target_properties(darknet_opencv PROPERTIES LINKER_LANGUAGE CXX)
+    endif ()
+    target_include_directories(darknet_opencv PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/cuda>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
+            $<INSTALL_INTERFACE:include>
+            $<BUILD_INTERFACE:${Stb_INCLUDE_DIR}>)
+endif ()
 
 ### FINAL THINGS: link libraries
 

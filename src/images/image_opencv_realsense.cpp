@@ -1,8 +1,6 @@
 #include <darknet/images/image_opencv_realsense.h>
 #include <iostream>
 
-#ifdef DARKNET_USE_OPENCV
-
 #include <darknet/images/realsense-opencv-helpers.hpp>
 #include <darknet/utils/utils.h>
 
@@ -90,5 +88,3 @@ extern "C" void release_depth_frame(void **depth_frame) {
 }
 
 }   // extern "C"
-
-#endif // DARKNET_USE_OPENCV

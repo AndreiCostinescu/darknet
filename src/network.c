@@ -5,7 +5,6 @@
 #include <assert.h>
 
 #include <darknet/network.h>
-#include <darknet/images/image.h>
 #include <darknet/utils/blas.h>
 #include <darknet/utils/data.h>
 #include <darknet/utils/utils.h>
@@ -386,10 +385,6 @@ float train_network_sgd(network net, data d, int n) {
 }
 
 float train_network(network net, data d) {
-    return train_network_waitkey(net, d, 0);
-}
-
-float train_network_waitkey(network net, data d, int wait_key) {
     assert(d.X.rows % net.batch == 0);
     int batch = net.batch;
     int n = d.X.rows / batch;
@@ -403,7 +398,6 @@ float train_network_waitkey(network net, data d, int wait_key) {
         net.current_subdivision = i;
         float err = train_network_datum(net, X, y);
         sum += err;
-        if (wait_key) wait_key_cv(5);
     }
     (*net.cur_iteration) += 1;
 #ifdef GPU
@@ -670,19 +664,6 @@ image get_network_image(network net) {
     }
     image def = {0};
     return def;
-}
-
-void visualize_network(network net) {
-    image *prev = 0;
-    int i;
-    char buff[256];
-    for (i = 0; i < net.n; ++i) {
-        sprintf(buff, "Layer %d", i);
-        layer l = net.layers[i];
-        if (l.type == CONVOLUTIONAL) {
-            prev = visualize_convolutional_layer(l, buff, prev);
-        }
-    }
 }
 
 void top_predictions(network net, int k, int *index) {

@@ -11,8 +11,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-extern int check_mistakes;
-
 layer make_yolo_layer(int batch, int w, int h, int n, int total, int *mask, int classes, int max_boxes, int verbose) {
     int i;
     layer l = {(LAYER_TYPE) 0};

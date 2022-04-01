@@ -424,17 +424,6 @@ void denormalize_net(char *cfgfile, char *weightfile, char *outfile) {
     save_weights(net, outfile);
 }
 
-void visualize(char *cfgfile, char *weightfile) {
-    network net = parse_network_cfg(cfgfile);
-    if (weightfile) {
-        load_weights(&net, weightfile);
-    }
-    visualize_network(net);
-#ifdef DARKNET_USE_OPENCV
-    wait_until_press_key_cv();
-#endif
-}
-
 int main(int argc, char **argv) {
 #ifdef _DEBUG
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
@@ -484,8 +473,6 @@ int main(int argc, char **argv) {
 
 #endif  // GPU
 
-    show_opencv_info();
-
     if (0 == strcmp(argv[1], "average")) {
         average(argc, argv);
     } else if (0 == strcmp(argv[1], "yolo")) {
@@ -527,8 +514,6 @@ int main(int argc, char **argv) {
         run_writing(argc, argv);
     } else if (0 == strcmp(argv[1], "3d")) {
         composite_3d(argv[2], argv[3], argv[4], (argc > 5) ? atof(argv[5]) : 0);
-    } else if (0 == strcmp(argv[1], "test")) {
-        test_resize(argv[2]);
     } else if (0 == strcmp(argv[1], "captcha")) {
         run_captcha(argc, argv);
     } else if (0 == strcmp(argv[1], "nightmare")) {
@@ -553,10 +538,6 @@ int main(int argc, char **argv) {
         oneoff(argv[2], argv[3], argv[4]);
     } else if (0 == strcmp(argv[1], "partial")) {
         partial(argv[2], argv[3], argv[4], atoi(argv[5]));
-    } else if (0 == strcmp(argv[1], "visualize")) {
-        visualize(argv[2], (argc > 3) ? argv[3] : 0);
-    } else if (0 == strcmp(argv[1], "imtest")) {
-        test_resize(argv[2]);
     } else {
         fprintf(stderr, "Not an option: %s\n", argv[1]);
     }
