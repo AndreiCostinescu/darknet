@@ -98,6 +98,8 @@ void draw_detections_cv_v3(mat_cv **show_img, detection *detections, int num, fl
                            image **alphabet, int classes, int printDetections);
 void draw_detections_cv_with_depth(mat_cv **show_img, detection *detections, int num, float thresh, char **names,
                                    image **alphabet, int classes, int printDetections, void *getDepth);
+void draw_detections_cv_simple_with_depth(mat_cv *show_img, detection *detections, int num, float thresh, char **names,
+                                          int classes, int printDetections, void *getDepth);
 
 // Draw Loss & Accuracy chart
 mat_cv *draw_train_chart(char *windows_name, float max_img_loss, int max_batches, int number_of_lines, int img_size,

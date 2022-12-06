@@ -885,6 +885,13 @@ extern "C" void draw_detections_cv_v3(mat_cv **mat, detection *detections, int n
 }
 // ----------------------------------------
 
+extern "C" void draw_detections_cv_simple_with_depth(
+        mat_cv *mat, detection *detections, int num, float thresh, char **names, int classes, int printDetections,
+        void *_getDepth) {
+    draw_detections_cv_with_depth(&mat, detections, num, thresh, names, nullptr, classes, printDetections, _getDepth);
+}
+// ----------------------------------------
+
 extern "C" void draw_detections_cv_with_depth(
         mat_cv **mat, detection *detections, int num, float thresh, char **names, image **alphabet,
         int classes, int printDetections, void *_getDepth) {
