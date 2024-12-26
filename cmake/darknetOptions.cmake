@@ -56,9 +56,28 @@ if (${ENABLE_CUDA})
     include(CheckLanguage)
     check_language(CUDA)
     
+    # Run the 'nvcc --version' command to get the CUDA compiler version
+    execute_process(
+        COMMAND ${CMAKE_CUDA_COMPILER} --version
+        RESULT_VARIABLE result
+        OUTPUT_VARIABLE cuda_version_output
+        ERROR_VARIABLE cuda_error
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    # Check if the command was successful
+    if(result EQUAL 0)
+        # Populate the CMAKE_CUDA_COMPILER_VERSION variable
+        string(REGEX MATCH "release [0-9]+\\.[0-9]+" CMAKE_CUDA_COMPILER_VERSION ${cuda_version_output})
+        string(REGEX MATCH "[0-9]+\\.[0-9]+" CMAKE_CUDA_COMPILER_VERSION ${CMAKE_CUDA_COMPILER_VERSION})
+        message(STATUS "CUDA Compiler Version (Extracted): ${CMAKE_CUDA_COMPILER_VERSION}")
+    else()
+        message(FATAL_ERROR "Failed to get CUDA version: ${cuda_error}")
+    endif()
+    
     if (CMAKE_CUDA_COMPILER AND CMAKE_CUDA_COMPILER_VERSION VERSION_GREATER_EQUAL "9.0")
         execute_process(
-            COMMAND ${CMAKE_CUDA_COMPILER} --list-gpus
+            COMMAND __nvcc_device_query
             RESULT_VARIABLE result
             OUTPUT_VARIABLE gpu_output
             ERROR_VARIABLE gpu_error
@@ -66,12 +85,11 @@ if (${ENABLE_CUDA})
         )
         # Check if the command was successful
         if(result EQUAL 0)
-            message(STATUS "Found CUDA GPUs with the following compute capabilities:")
-            message(STATUS "${gpu_output}")
-            string(REGEX MATCH "compute_[0-9]+" compute_capability "${gpu_output}")
+            # string(REGEX MATCH "compute_[0-9]+" compute_capability "${gpu_output}")
+            set(compute_capability "${gpu_output}")
             message(STATUS "Native GPU compute capability: ${compute_capability}")
         else()
-          message(FATAL_ERROR "Failed to query CUDA GPUs: ${gpu_error}")
+            message(WARNING "Can not get compute capabilities: ${gpu_error}")
         endif()
         
         set(CMAKE_CUDA_ARCHITECTURES "native" CACHE STRING "\"native\" detects local machine GPU compute arch at runtime, \"all-major\" and \"all\" cover common and entire subsets of architectures, \"Numbers\" is a semicolor-separated list of compute capabilities (version number) to enable")
