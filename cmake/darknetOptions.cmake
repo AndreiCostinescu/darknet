@@ -99,7 +99,7 @@ if (${ENABLE_CUDA})
 
         message(STATUS "Building with CUDA flags: " "${CUDA_ARCH_FLAGS}")
         message(STATUS "Building witih compute capabilities: " "${compute_capability}")
-        if (${compute_capability} >= 70)
+        if (${compute_capability} GREATER_EQUAL 70)
             message(STATUS "Your setup supports half precision (it requires compute capabilities CC >= 7.0)")
         else ()
             set(ENABLE_CUDNN_HALF "FALSE" CACHE BOOL "Enable CUDNN Half precision" FORCE)
