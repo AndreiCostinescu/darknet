@@ -89,6 +89,7 @@ if (${ENABLE_CUDA})
             set(compute_capability "${gpu_output}")
             message(STATUS "Native GPU compute capability: ${compute_capability}")
         else()
+            set(compute_capability "0")
             message(WARNING "Can not get compute capabilities: ${gpu_error}")
         endif()
         
