@@ -34,26 +34,61 @@ if(NOT CUDNN_LIBRARY)
     PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
 endif()
 
-if(EXISTS "${CUDNN_INCLUDE_DIR}/cudnn.h")
-  file(READ ${CUDNN_INCLUDE_DIR}/cudnn.h CUDNN_HEADER_CONTENTS)
-    string(REGEX MATCH "define CUDNN_MAJOR * +([0-9]+)"
-                 CUDNN_VERSION_MAJOR "${CUDNN_HEADER_CONTENTS}")
-    string(REGEX REPLACE "define CUDNN_MAJOR * +([0-9]+)" "\\1"
-                 CUDNN_VERSION_MAJOR "${CUDNN_VERSION_MAJOR}")
-    string(REGEX MATCH "define CUDNN_MINOR * +([0-9]+)"
-                 CUDNN_VERSION_MINOR "${CUDNN_HEADER_CONTENTS}")
-    string(REGEX REPLACE "define CUDNN_MINOR * +([0-9]+)" "\\1"
-                 CUDNN_VERSION_MINOR "${CUDNN_VERSION_MINOR}")
-    string(REGEX MATCH "define CUDNN_PATCHLEVEL * +([0-9]+)"
-                 CUDNN_VERSION_PATCH "${CUDNN_HEADER_CONTENTS}")
-    string(REGEX REPLACE "define CUDNN_PATCHLEVEL * +([0-9]+)" "\\1"
-                 CUDNN_VERSION_PATCH "${CUDNN_VERSION_PATCH}")
-  if(NOT CUDNN_VERSION_MAJOR)
-    set(CUDNN_VERSION "?")
+function(read_header_version HEADER_PATH PREFIX)
+  # Read file
+  file(READ "${HEADER_PATH}" _header_contents)
+
+  # Try to extract major/minor/patch; return success if MAJOR found
+  string(REGEX MATCH "define[ \t]+CUDNN_MAJOR[ \t]+([0-9]+)" _match_major "${_header_contents}")
+  if(_match_major)
+    string(REGEX REPLACE "define[ \t]+CUDNN_MAJOR[ \t]+([0-9]+)" "\\1" "${PREFIX}_VERSION_MAJOR" "${_match_major}")
   else()
+    set("${PREFIX}_VERSION_MAJOR" "" PARENT_SCOPE)
+    return()
+  endif()
+
+  string(REGEX MATCH "define[ \t]+CUDNN_MINOR[ \t]+([0-9]+)" _match_minor "${_header_contents}")
+  if(_match_minor)
+    string(REGEX REPLACE "define[ \t]+CUDNN_MINOR[ \t]+([0-9]+)" "\\1" "${PREFIX}_VERSION_MINOR" "${_match_minor}")
+  else()
+    set("${PREFIX}_VERSION_MINOR" "" PARENT_SCOPE)
+  endif()
+
+  string(REGEX MATCH "define[ \t]+CUDNN_PATCHLEVEL[ \t]+([0-9]+)" _match_patch "${_header_contents}")
+  if(_match_patch)
+    string(REGEX REPLACE "define[ \t]+CUDNN_PATCHLEVEL[ \t]+([0-9]+)" "\\1" "${PREFIX}_VERSION_PATCH" "${_match_patch}")
+  else()
+    set("${PREFIX}_VERSION_PATCH" "" PARENT_SCOPE)
+  endif()
+
+  # Export results to caller scope
+  set("${PREFIX}_VERSION_MAJOR" "${${PREFIX}_VERSION_MAJOR}" PARENT_SCOPE)
+  set("${PREFIX}_VERSION_MINOR" "${${PREFIX}_VERSION_MINOR}" PARENT_SCOPE)
+  set("${PREFIX}_VERSION_PATCH" "${${PREFIX}_VERSION_PATCH}" PARENT_SCOPE)
+
+  return()
+endfunction()
+
+
+if(EXISTS "${CUDNN_INCLUDE_DIR}/cudnn.h")
+  read_header_version("${CUDNN_INCLUDE_DIR}/cudnn.h" "CUDNN")
+  if(CUDNN_VERSION_MAJOR)
     set(CUDNN_VERSION "${CUDNN_VERSION_MAJOR}.${CUDNN_VERSION_MINOR}.${CUDNN_VERSION_PATCH}")
+  elseif(EXISTS "${CUDNN_INCLUDE_DIR}/cudnn_version.h")
+    read_header_version("${CUDNN_INCLUDE_DIR}/cudnn_version.h" "CUDNN")
+    if(CUDNN_VERSION_MAJOR)
+      set(CUDNN_VERSION "${CUDNN_VERSION_MAJOR}.${CUDNN_VERSION_MINOR}.${CUDNN_VERSION_PATCH}")
+    else()
+      set(CUDNN_VERSION "?")
+    endif()
+  else()
+    set(CUDNN_VERSION "?")
   endif()
 endif()
+
+message(${CUDNN_INCLUDE_DIR})
+message(${CUDNN_LIBRARY})
+message(${CUDNN_LIBRARIES})
 
 set(CUDNN_INCLUDE_DIRS ${CUDNN_INCLUDE_DIR})
 set(CUDNN_LIBRARIES ${CUDNN_LIBRARY})
