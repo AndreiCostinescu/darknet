@@ -18,7 +18,7 @@ set(PROJECT_INCLUDE_PREFIX darknet)
 # install include files
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/${PROJECT_INCLUDE_PREFIX}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        )
+)
 
 install(TARGETS dark
         EXPORT DarknetTargets
@@ -27,29 +27,31 @@ install(TARGETS dark
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_INCLUDE_PREFIX}"
         COMPONENT dev
-        )
-install(TARGETS dark_realsense
-        EXPORT DarknetTargets
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_INCLUDE_PREFIX}"
-        COMPONENT dev
-        )
+)
+if (ENABLE_REALSENSE)
+    install(TARGETS dark_realsense
+            EXPORT DarknetTargets
+            RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+            LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+            ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+            PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_PREFIX}/include/${PROJECT_INCLUDE_PREFIX}"
+            COMPONENT dev
+    )
+endif ()
 install(TARGETS uselib darknet
         DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        )
+)
 if (OpenCV_FOUND AND OpenCV_VERSION VERSION_GREATER "3.0" AND BUILD_USELIB_TRACK)
     install(TARGETS uselib_track
             DESTINATION "${CMAKE_INSTALL_BINDIR}"
-            )
+    )
 endif ()
 
 install(EXPORT DarknetTargets
         FILE DarknetTargets.cmake
         NAMESPACE Darknet::
         DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
-        )
+)
 
 message("HELLO WORLD!")
 # Export the package for use from the build-tree (this registers the build-tree with a global CMake-registry)
@@ -71,10 +73,10 @@ configure_file(cmake/DarknetConfig.cmake.in "${PROJECT_BINARY_DIR}/DarknetConfig
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file("${PROJECT_BINARY_DIR}/DarknetConfigVersion.cmake"
         COMPATIBILITY SameMajorVersion
-        )
+)
 
 install(FILES
         "${PROJECT_BINARY_DIR}/DarknetConfig.cmake"
         "${PROJECT_BINARY_DIR}/DarknetConfigVersion.cmake"
         DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
-        )
+)
