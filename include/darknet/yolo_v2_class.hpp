@@ -51,9 +51,9 @@ struct bbox_t_container {
 #include <cmath>
 
 #ifdef DARKNET_USE_OPENCV
-#include <opencv2/opencv.hpp>            // C++
-#include <opencv2/highgui/highgui_c.h>   // C
-#include <opencv2/imgproc/imgproc_c.h>   // C
+#include <opencv2/opencv.hpp>   // C++
+#include <opencv2/highgui.hpp>  // C++
+#include <opencv2/imgproc.hpp>  // C++
 #endif
 
 extern "C" LIB_API int init(const char *configurationFilename, const char *weightsFilename, int gpu);
@@ -320,11 +320,11 @@ public:
             }
             else if (src_mat.channels() == 3) {
                 src_mat_gpu.upload(src_mat, stream);
-                cv::cuda::cvtColor(src_mat_gpu, src_grey_gpu, CV_BGR2GRAY, 1, stream);
+                cv::cuda::cvtColor(src_mat_gpu, src_grey_gpu, cv::COLOR_BGR2GRAY, 1, stream);
             }
             else if (src_mat.channels() == 4) {
                 src_mat_gpu.upload(src_mat, stream);
-                cv::cuda::cvtColor(src_mat_gpu, src_grey_gpu, CV_BGRA2GRAY, 1, stream);
+                cv::cuda::cvtColor(src_mat_gpu, src_grey_gpu, cv::COLOR_BGRA2GRAY, 1, stream);
             }
             else {
                 std::cerr << " Warning: src_mat.channels() is not: 1, 3 or 4. It is = " << src_mat.channels() << " \n";
@@ -357,7 +357,7 @@ public:
 
         //dst_grey_gpu.upload(dst_mat, stream);    // use BGR
         dst_mat_gpu.upload(dst_mat, stream);
-        cv::cuda::cvtColor(dst_mat_gpu, dst_grey_gpu, CV_BGR2GRAY, 1, stream);
+        cv::cuda::cvtColor(dst_mat_gpu, dst_grey_gpu, cv::COLOR_BGR2GRAY, 1, stream);
 
         if (src_grey_gpu.rows != dst_grey_gpu.rows || src_grey_gpu.cols != dst_grey_gpu.cols) {
             stream.waitForCompletion();

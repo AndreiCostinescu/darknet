@@ -204,7 +204,11 @@ void draw_boxes(cv::Mat mat_img, std::vector<bbox_t> result_vec, std::vector<std
 
             cv::rectangle(mat_img, cv::Point2f(std::max((int)i.x - 1, 0), std::max((int)i.y - 35, 0)),
                 cv::Point2f(std::min((int)i.x + max_width, mat_img.cols - 1), std::min((int)i.y, mat_img.rows - 1)),
+#if CV_VERSION_MAJOR >= 5
+                color, cv::FILLED, 8, 0);
+#else
                 color, CV_FILLED, 8, 0);
+#endif
             putText(mat_img, obj_name, cv::Point2f(i.x, i.y - 16), cv::FONT_HERSHEY_COMPLEX_SMALL, 1.2, cv::Scalar(0, 0, 0), 2);
             if(!coords_3d.empty()) putText(mat_img, coords_3d, cv::Point2f(i.x, i.y-1), cv::FONT_HERSHEY_COMPLEX_SMALL, 0.8, cv::Scalar(0, 0, 0), 1);
         }
@@ -581,7 +585,7 @@ int main(int argc, char *argv[])
                         cv::Mat output_frame;
                         do {
                             detection_data = draw2write.receive();
-                            if(detection_data.draw_frame.channels() == 4) cv::cvtColor(detection_data.draw_frame, output_frame, CV_RGBA2RGB);
+                            if(detection_data.draw_frame.channels() == 4) cv::cvtColor(detection_data.draw_frame, output_frame, cv::COLOR_RGBA2RGB);
                             else output_frame = detection_data.draw_frame;
                             output_video << output_frame;
                         } while (!detection_data.exit_flag);
